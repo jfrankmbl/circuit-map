@@ -19,8 +19,8 @@ export const button = (text, onclick, cls = "") => h("button", { type: "button",
 
 // A sheet from the bottom of the screen (a centred box on a wide window). build(close) returns its content.
 // Esc and the returned function both close it.
-export function openSheet(title, build) {
-  const dialog = h("dialog", { class: "sheet" });
+export function openSheet(title, build, cls = "") {
+  const dialog = h("dialog", { class: "sheet " + cls });
   // Removed here as well as on the close event (which is what Esc fires): the event can come late or not at all.
   const close = () => {
     dialog.close();
