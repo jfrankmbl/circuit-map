@@ -8,9 +8,10 @@ import { h, toast, clearToast } from "./ui.js";
 import { createPlan } from "./view/plan.js";
 import { welcomeView } from "./view/welcome.js";
 import { setupView } from "./view/setup.js";
+import { browseView } from "./view/browse.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
-const TABS = [["floors", "Floors", setupView]];
+const TABS = [["floors", "Floors", setupView], ["map", "Map", browseView]];
 
 const $ = (id) => document.getElementById(id);
 
