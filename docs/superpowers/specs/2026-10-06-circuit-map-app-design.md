@@ -114,7 +114,7 @@ it)." On the Mac "or drop the file here" is added.
    browser can read it; the camera's own rotation is honoured) or a PDF. A PDF with more than one page shows the pages
    as small thumbnails to tap. The chosen picture is shown with Rotate left / Rotate right buttons and a Use this
    picture button; "Preparing picture..." shows while it is shrunk and saved. A floor with no picture shows "This floor
-   has no picture yet" and a Choose a picture button on every tab that would show its plan. An attic or crawl space often has no plan: under the button it says "No plan of this space? Put its things on the nearest floor, in a room called Attic." Replace picture on a floor
+   has no picture yet" and a Choose a picture button on every tab that would show its plan. (Josh, 2026-10-08: no attic hint under the button.) Replace picture on a floor
    that already has rooms or devices (a hand sketch replaced by a proper drawing, say) goes on to a line-up step so
    what he has placed follows the plan. "Line up the new picture" shows the old picture with its markers and says
    "Tap a spot you can find on both pictures, like a far corner of the house", then "Now tap a second spot, far from

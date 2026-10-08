@@ -1368,7 +1368,7 @@ function floorList(app) {
     h("label", {}, "House name", nameField(p.name, (name) => app.commit("renamed the house", (p) => m.rename(p, name)))),
     h("h2", {}, "Floors"),
     floors.length
-      ? [h("p", { class: "small" }, "Lowest floor first."), h("ul", { class: "rows" }, floors.map(row))]
+      ? h("ul", { class: "rows" }, floors.map(row))
       : h("p", {}, "No floors yet. Add one."),
     h("div", { class: "buttons" },
       button("Add floor", () => addFloorSheet(app), "main"),
@@ -1421,7 +1421,6 @@ function floorPage(app, floor) {
     picture = [
       h("p", {}, "Next: add a picture of the floor."),
       button("Choose a picture", () => picker.click(), "main"),
-      h("p", { class: "small" }, "No plan of this space? Put its things on the nearest floor, in a room called Attic."),
     ];
   }
   return h("section", { class: "page floor-page" },
