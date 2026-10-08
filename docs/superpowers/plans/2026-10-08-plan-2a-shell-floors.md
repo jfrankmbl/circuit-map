@@ -1631,7 +1631,7 @@ Expected: it prints a name like `File house 2026-10-08 1405.circuitmap` and the 
 
 Expected:
 1. "I already have a project file", pick the file: "File house, 1 floor, 0 devices, last changed <today's date>, today. Use this one?" with Use it and Choose another file.
-2. Use it: the app opens on Map (the floor has a picture) with the header "File house" and a tiny one-pixel picture in the middle of the plan; + makes it grow.
+2. Use it: the app opens on Map (the floor has a picture) with the header "File house" and the one-pixel picture stretched to a coloured square that fills the plan.
 3. Reload: still File house.
 4. On a wide window, delete the database again, reload, and drag the file onto the welcome page: the same question appears.
 
