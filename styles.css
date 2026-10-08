@@ -111,3 +111,36 @@ dialog.sheet ul { margin: 0; padding-left: 24px; }
 #mode-banner > span { flex: 1 1 100%; }
 #undo { margin-left: auto; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 699px) { #mode-banner { flex: 1 1 100%; } }
+
+/* Markers. Fixed colours, as for outlines. */
+.marker-shape .halo { fill: none; stroke: #fff; stroke-width: 6px; }
+.marker-shape .body { stroke: #111; stroke-width: 2px; }
+.outlet .body { fill: #0b57d0; }
+.switch .body { fill: #188038; }
+.light .body { fill: #f9ab00; }
+.other .body, .custom .body { fill: #8430ce; }
+.marker-text { font: 700 12px system-ui, -apple-system, "Segoe UI", sans-serif; fill: #fff; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.marker-badge, .marker-label { font: 700 16px system-ui, -apple-system, "Segoe UI", sans-serif; stroke: #fff; stroke-width: 4px; paint-order: stroke; pointer-events: none; }
+.marker-badge { fill: #b3261e; }
+.marker-label { fill: #111; text-anchor: middle; }
+.ring { fill: none; stroke: #b3261e; stroke-width: 3px; }
+.pulse .ring { animation: pulse 0.7s ease-out 3; }
+@keyframes pulse { from { transform: scale(0.6); opacity: 1; } to { transform: scale(1.7); opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .pulse .ring { animation: none; } } /* a steady ring instead */
+.marker.moving .body { stroke: #b3261e; stroke-width: 3px; }
+.glyph { flex: none; }
+
+/* The Add tab and its sheets */
+.pick-row { display: flex; align-items: center; gap: 8px; padding: 4px 16px; overflow-x: auto; }
+.pick-row button { flex: none; }
+button.recent, button.type-button { display: flex; align-items: center; gap: 8px; text-align: left; }
+button.type-button { width: 100%; }
+.type-button > span { display: flex; flex-direction: column; }
+.type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.scroll { max-height: 50vh; overflow: auto; }
+.scroll h3 { margin: 12px 0 6px; font-size: 18px; }
+.plan-hint { margin: 0; padding: 4px 16px; }
+#mode-banner .result { display: block; font-size: 22px; }
+dialog.sheet.marker h2 { font-size: 32px; }
+details > summary { display: flex; align-items: center; min-height: 44px; font-weight: 600; cursor: pointer; }
+details > * + * { margin-top: 12px; }
