@@ -7,9 +7,10 @@ import { startTab } from "./flow.js";
 import { h, toast, clearToast } from "./ui.js";
 import { createPlan } from "./view/plan.js";
 import { welcomeView } from "./view/welcome.js";
+import { setupView } from "./view/setup.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
-const TABS = [];
+const TABS = [["floors", "Floors", setupView]];
 
 const $ = (id) => document.getElementById(id);
 

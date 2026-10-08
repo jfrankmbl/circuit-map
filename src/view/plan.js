@@ -59,9 +59,13 @@ export function createPlan() {
     }
     const next = URL.createObjectURL(blob);
     const img = new Image();
-    img.src = next;
     try {
-      await img.decode();
+      // The load event, not img.decode(): decode() waits for the page to be visible.
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = next;
+      });
     } catch {
       URL.revokeObjectURL(next);
       if (mine === token) setMessage("This picture could not be shown.");
