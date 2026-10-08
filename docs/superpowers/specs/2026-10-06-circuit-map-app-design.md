@@ -115,8 +115,17 @@ it)." On the Mac "or drop the file here" is added.
    as small thumbnails to tap. The chosen picture is shown with Rotate left / Rotate right buttons and a Use this
    picture button; "Preparing picture..." shows while it is shrunk and saved. A floor with no picture shows "This floor
    has no picture yet" and a Choose a picture button on every tab that would show its plan. An attic or crawl space often has no plan: under the button it says "No plan of this space? Put its things on the nearest floor, in a room called Attic." Replace picture on a floor
-   that already has rooms or devices asks first and says that outlines and markers stay where they are on the picture,
-   so the new picture should show the same plan at the same size. Optionally set scale by tapping two points and typing
+   that already has rooms or devices (a hand sketch replaced by a proper drawing, say) goes on to a line-up step so
+   what he has placed follows the plan. "Line up the new picture" shows the old picture with its markers and says
+   "Tap a spot you can find on both pictures, like a far corner of the house", then "Now tap a second spot, far from
+   the first"; then the new picture, asking for the same two spots in the same order, each numbered 1 and 2 where he
+   tapped. Use these spots moves, resizes and turns every outline and marker on that floor to match, and the scale
+   with them; the banner then reads "Moved 38 devices and 4 rooms to fit the new picture. Undo", and under it "Anything
+   that sits wrong? Tap it and choose Move." (a sketch's proportions are rarely true, so some will). Two spots tapped
+   in the same place, or closer than a twentieth of the picture's width, say "Pick two spots further apart." Same
+   picture, same size is offered as plain text under the first prompt for a cleaner scan of the same drawing, and
+   skips the step. Cancel at any point leaves the old picture and everything on it untouched. The old picture is kept
+   until the app is next opened so Undo can bring it back. Optionally set scale by tapping two points and typing
    the real distance in two number boxes labelled "feet" and "inches" (no quote marks to type). Rooms per floor:
    name and short code, suggested from the name (`Kitchen` gives `KIT`). The code box is labelled "Label code (used on
    labels like KIT-01)", turns typed letters into capitals and says in words if a code is taken. Then trace the room by tapping its corners
@@ -494,6 +503,10 @@ comes from the data, so no room can be silently dropped (the checksheet filtered
 
 Drawing walls, wall snapping, distance-from-corner entry, DXF import or export, a scaled printable plan
 sheet, conduit runs, several houses on one device, live sync, accounts.
+
+Decided with Josh on 2026-10-08: no "Recently deleted" screen (Undo, Save a copy first and the backup nudge cover
+it); one type per switch plate (a mixed plate's other switches go in the note); and, when a floor's picture is
+replaced, a two-spot line-up for the whole floor rather than a room-by-room fit.
 
 ## Errors and edge cases
 

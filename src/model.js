@@ -87,6 +87,37 @@ export function scaleFromPoints(a, b, inches) {
   return px / inches;
 }
 
+// A floor's picture was replaced (a sketch by a proper drawing). He tapped the same two spots on the old picture
+// (fromA, fromB) and on the new one (toA, toB); every marker and outline on the floor is moved, resized and turned
+// to match, and the scale with them. Returns how many were moved, for the banner.
+export function refitFloor(project, floorId, { fromA, fromB, toA, toB }, now = Date.now()) {
+  const floor = find(project, "floors", floorId);
+  if (!floor) throw new Error(`no floors record ${floorId}`);
+  const fx = fromB[0] - fromA[0], fy = fromB[1] - fromA[1], tx = toB[0] - toA[0], ty = toB[1] - toA[1];
+  const len2 = fx * fx + fy * fy;
+  if (!len2 || !(tx || ty)) throw new Error("Pick two spots further apart.");
+  // The two spots as complex numbers: to = s * from, so s carries the resize and the turn together.
+  const sr = (tx * fx + ty * fy) / len2, si = (ty * fx - tx * fy) / len2;
+  const fit = ([x, y]) => {
+    const dx = x - fromA[0], dy = y - fromA[1];
+    return [sr * dx - si * dy + toA[0], si * dx + sr * dy + toA[1]];
+  };
+  const moved = { devices: 0, rooms: 0 };
+  for (const d of project.devices) {
+    if (d.floorId !== floorId) continue;
+    const [x, y] = fit([d.x, d.y]);
+    update(project, "devices", d.id, { x, y }, now);
+    moved.devices++;
+  }
+  for (const r of project.rooms) {
+    if (r.floorId !== floorId || !r.outline.length) continue;
+    update(project, "rooms", r.id, { outline: r.outline.map(fit) }, now);
+    moved.rooms++;
+  }
+  update(project, "floors", floorId, { pxPerIn: floor.pxPerIn * Math.hypot(sr, si) }, now);
+  return moved;
+}
+
 // ---- rooms
 
 export function addRoom(project, { floorId, name, code }, now = Date.now()) {

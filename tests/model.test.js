@@ -108,3 +108,26 @@ test("scaleFromPoints gives pixels per inch", () => {
   assert.throws(() => m.scaleFromPoints([0, 0], [0, 0], 10), /two different points/);
   assert.throws(() => m.scaleFromPoints([0, 0], [1, 1], 0), /distance/);
 });
+
+test("refitFloor moves, resizes and turns everything on one floor to fit a new picture", () => {
+  const { p, main, kit } = sample();
+  m.update(p, "floors", main.id, { pxPerIn: 2 }, 1000);
+  const d = m.placeDevice(p, { floorId: main.id, roomId: kit.id, type: "D", x: 50, y: 0 }, 1100);
+  const up = m.addFloor(p, "Upstairs", 1200);
+  const bed = m.addRoom(p, { floorId: up.id, name: "Bed", code: "BED" }, 1200);
+  const other = m.placeDevice(p, { floorId: up.id, roomId: bed.id, type: "D", x: 50, y: 0 }, 1200);
+  // Twice the size and shifted by (10, 20).
+  const r = m.refitFloor(p, main.id, { fromA: [0, 0], fromB: [100, 0], toA: [10, 20], toB: [210, 20] }, 2000);
+  assert.deepEqual(r, { devices: 1, rooms: 1 });
+  assert.deepEqual([d.x, d.y, d.updated], [110, 20, 2000]);
+  assert.deepEqual(kit.outline, [[10, 20], [210, 20], [210, 220], [10, 220]]);
+  assert.equal(main.pxPerIn, 4);
+  assert.deepEqual([other.x, other.y, other.updated], [50, 0, 1200]);
+  assert.equal(m.find(p, "rooms", p.rooms[1].id).updated, 1000); // a room with no outline is left alone
+  // A quarter turn: the new picture is the old one rotated.
+  m.refitFloor(p, main.id, { fromA: [10, 20], fromB: [210, 20], toA: [0, 0], toB: [0, 200] }, 3000);
+  assert.deepEqual([d.x, d.y, main.pxPerIn], [0, 100, 4]);
+  assert.throws(() => m.refitFloor(p, main.id, { fromA: [1, 1], fromB: [1, 1], toA: [0, 0], toB: [5, 5] }, 1), /further apart/);
+  assert.throws(() => m.refitFloor(p, main.id, { fromA: [0, 0], fromB: [5, 5], toA: [2, 2], toB: [2, 2] }, 1), /further apart/);
+  assert.throws(() => m.refitFloor(p, "nope", { fromA: [0, 0], fromB: [5, 5], toA: [0, 0], toB: [5, 5] }, 1), /no floors record/);
+});

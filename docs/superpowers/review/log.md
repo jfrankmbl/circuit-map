@@ -40,6 +40,8 @@ Pass B done for: first launch, Setup, tab bar, modes/undo (round 2); Setup rooms
 5. ANSWERED by Josh (round 18): "idk what numbering his uses, or how many it has". Resolved without needing the answer: Add panel has a Numbering choice (A odd/even, B down the sides) with small drawings and a "not sure, pick A, change later" default, and the space count can be changed later (never below a space that has a breaker). See round 18.
 6. "Recently deleted" (a trash that keeps deleted floors, rooms and devices for 30 days). Round 39 used Undo, a "Save a copy first" button and a kept floor picture instead. A trash would survive closing the app, which Undo does not. Needs a decision: it is a new screen and keeps deleted records on the device. Recommendation: not in v1; the copy-first button covers the worst case (deleting a whole floor), and the backup nudge exists.
 
+Answered by Josh on 2026-10-08: Q1, his dad may well sketch by hand and replace it with a proper drawing later, so v1 gets a two-spot "Line up the new picture" step (`refitFloor` in the model; spec Screens > Setup). Q4 and Q6: go with the recommendations (not in v1).
+
 ---
 
 ## Round 1 - Pass A story 1 (Mac, empty app to named house, two floors from a photo and a PDF)
