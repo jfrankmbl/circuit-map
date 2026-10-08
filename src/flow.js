@@ -1,5 +1,6 @@
 // Wording and small decisions that more than one screen needs. No DOM here, so it can be tested.
 import { find, affected, sortedFloors } from "./model.js";
+import { CODE_PATTERN } from "./ids.js";
 
 export function plural(n, word) {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -62,4 +63,50 @@ export function agoText(time, now = Date.now()) {
 export function describeFile(desc, now = Date.now()) {
   return `${desc.name}, ${plural(desc.floors, "floor")}, ${plural(desc.devices, "device")}, ` +
     `last changed ${dayText(desc.updated)}, ${agoText(desc.updated, now)}.`;
+}
+
+// ---- rooms
+
+export function roomSummary(project, room) {
+  const devices = project.devices.filter((d) => d.roomId === room.id).length;
+  return plural(devices, "device") + (room.outline.length ? "" : ", no outline");
+}
+
+export function deleteRoomQuestion(project, room) {
+  const devices = project.devices.filter((d) => d.roomId === room.id).length;
+  return devices ? `Delete ${room.name}? It has ${plural(devices, "device")}.` : `Delete ${room.name}?`;
+}
+
+// What is wrong with a label code, in words; "" if it can be used. roomId is the room being edited, if any.
+export function codeProblem(project, code, roomId = "") {
+  if (!CODE_PATTERN.test(code)) return "Use 2 to 4 capital letters or numbers, starting with a letter (like KIT or BR2).";
+  const other = project.rooms.find((r) => r.code === code && r.id !== roomId);
+  return other ? `${code} is already used by ${other.name}. Pick another.` : "";
+}
+
+// After an outline is edited. found is model.outlineMismatches(project, roomId). "" for a group with nothing in it.
+export function mismatchText(room, found) {
+  const out = found.outside.length, inn = found.inside.length;
+  return {
+    outside: out ? `${plural(out, "device")} ${out === 1 ? "is" : "are"} now outside ${room.name}.` : "",
+    inside: inn ? `${plural(inn, "device")} from ${inn === 1 ? "another room is" : "other rooms are"} now inside it.` : "",
+  };
+}
+
+// ---- scale and replacing a picture
+
+// moved is what model.refitFloor returns.
+export function refitText(moved) {
+  return `Moved ${plural(moved.devices, "device")} and ${plural(moved.rooms, "room")} to fit the new picture.`;
+}
+
+// Two line-up spots must be at least a twentieth of the picture's width apart, or the fit is too rough to trust.
+export function spotsTooClose(a, b, pictureWidth) {
+  return Math.hypot(b[0] - a[0], b[1] - a[1]) < pictureWidth / 20;
+}
+
+// The two number boxes, "feet" and "inches", as inches. 0 when nothing usable was typed.
+export function toInches(feet, inches) {
+  const total = (Number(feet) || 0) * 12 + (Number(inches) || 0);
+  return total > 0 ? total : 0;
 }
