@@ -1,5 +1,6 @@
 // Wording and small decisions that more than one screen needs. No DOM here, so it can be tested.
-import { find, affected, sortedFloors } from "./model.js";
+import { find, affected, sortedFloors, linksLostByTypeChange, linksOnRemovedToggles } from "./model.js";
+import { typeInfo, isSwitch } from "./catalog.js";
 import { CODE_PATTERN } from "./ids.js";
 
 export function plural(n, word) {
@@ -109,4 +110,43 @@ export function spotsTooClose(a, b, pictureWidth) {
 export function toInches(feet, inches) {
   const total = (Number(feet) || 0) * 12 + (Number(inches) || 0);
   return total > 0 ? total : 0;
+}
+
+// ---- placing and changing devices
+
+// Shown large after each tap, so he can write the label on the plate.
+export function placedText(project, device) {
+  const room = find(project, "rooms", device.roomId);
+  const count = project.devices.filter((d) => d.roomId === device.roomId).length;
+  return room ? `Placed ${device.label}. ${room.name} has ${plural(count, "device")}` : `Placed ${device.label}.`;
+}
+
+// name is what is being added ("Duplex outlet", "Dryer outlet"); room is the room taps are going into, if known.
+export function addingText(name, room) {
+  return room ? `Adding: ${name} in ${room.name}` : `Adding: ${name}. Tap the plan.`;
+}
+
+// What would be lost if this device became `type`, in words; "" if nothing would.
+export function typeChangeWarning(project, device, type) {
+  const links = linksLostByTypeChange(project, device.id, type).length;
+  const parts = [];
+  if (links) {
+    const change = isSwitch(type) ? "becomes a switch" : "stops being a switch";
+    parts.push(`${device.label} ${change}. Its ${plural(links, "link")} will be removed.`);
+  }
+  if (device.breakerId && !typeInfo(type).sweep) parts.push("Its breaker will be cleared.");
+  return parts.join(" ");
+}
+
+// What would be lost by cutting a switch plate down to `count` switches; "" if nothing would.
+export function togglesWarning(project, device, count) {
+  const links = linksOnRemovedToggles(project, device.id, count);
+  if (!links) return "";
+  return device.toggles - count === 1
+    ? `Switch ${device.toggles} controls ${plural(links, "device")}. Taking it off the plate clears that.`
+    : `The switches being taken off control ${plural(links, "device")}. Taking them off the plate clears that.`;
+}
+
+export function heightText(heightIn) {
+  return heightIn == null ? "Ceiling" : `${heightIn} in`;
 }
