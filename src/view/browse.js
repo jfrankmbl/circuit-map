@@ -2,7 +2,7 @@
 // come with Plans 2c and 2d.
 import { h, button } from "../ui.js";
 import { floorSwitch } from "./floorswitch.js";
-import { drawRooms } from "./roomlayer.js";
+import { drawFloor } from "./markers.js";
 
 export function browseView(app) {
   const floor = app.floor();
@@ -24,6 +24,6 @@ export function browseView(app) {
         button("Choose a picture", () => toFloors(floor.id), "main")));
   }
   app.showPicture(floor);
-  drawRooms(app, floor);
+  drawFloor(app, floor);
   return h("section", { class: "plan-screen" }, floorSwitch(app), app.plan.el);
 }

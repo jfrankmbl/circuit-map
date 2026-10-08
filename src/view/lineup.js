@@ -36,7 +36,7 @@ export function startLineUp(app, floor, blob) {
     });
     app.endMode();
     // The old picture stays in the store until the app is next opened, so Undo brings it back.
-    toast(moved ? refitText(moved) + " Check the room outlines and fix any that sit wrong with Edit outline." : "Picture replaced.",
+    toast(moved ? refitText(moved) + " Anything that sits wrong? Tap it on the Add tab and choose Move." : "Picture replaced.",
       { text: "Undo", run: () => app.undo() });
   };
 

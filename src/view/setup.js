@@ -3,7 +3,7 @@ import * as m from "../model.js";
 import { checklist, floorSummary, deleteFloorQuestion, floorAfterDelete } from "../flow.js";
 import { readPicture, drawPicture, canvasBlob } from "../picture.js";
 import { h, button, nameField, openSheet, ask, toast } from "../ui.js";
-import { drawRooms } from "./roomlayer.js";
+import { drawFloor } from "./markers.js";
 import { roomsSection, roomPage } from "./rooms.js";
 import { scaleSection } from "./scale.js";
 import { startLineUp } from "./lineup.js";
@@ -22,10 +22,12 @@ function openFloor(app, id) {
   app.render();
 }
 
-function checklistEl(project) {
-  const steps = checklist(project);
-  if (steps.every((s) => s.done)) return null;
-  return h("ol", { class: "checklist" }, steps.map((s) => h("li", { class: s.done ? "done" : "" }, (s.done ? "✓ " : "") + s.text)));
+function checklistEl(app) {
+  const steps = checklist(app.project);
+  if (!steps.every((s) => s.done)) {
+    return h("ol", { class: "checklist" }, steps.map((s) => h("li", { class: s.done ? "done" : "" }, (s.done ? "✓ " : "") + s.text)));
+  }
+  return app.project.devices.length ? null : button("Next: add outlets and switches", () => app.go("add"), "main");
 }
 
 function floorList(app) {
@@ -37,7 +39,7 @@ function floorList(app) {
       h("button", { type: "button", disabled: i === 0, onclick: () => app.commit(`moved ${f.name} up`, (p) => m.moveFloor(p, f.id, -1)) }, "Move up"),
       h("button", { type: "button", disabled: i === floors.length - 1, onclick: () => app.commit(`moved ${f.name} down`, (p) => m.moveFloor(p, f.id, 1)) }, "Move down")));
   return h("section", { class: "page" },
-    checklistEl(p),
+    checklistEl(app),
     h("label", {}, "House name", nameField(p.name, (name) => app.commit("renamed the house", (p) => m.rename(p, name)))),
     h("h2", {}, "Floors"),
     floors.length
@@ -80,7 +82,7 @@ function floorPage(app, floor) {
   // In the middle of something on this floor's plan (tracing, editing, scale, line-up): the plan takes the screen.
   if (app.mode && app.mode.floorId === floor.id) {
     if (!app.mode.ownPicture) app.showPicture(floor);
-    drawRooms(app, app.mode.noRooms ? null : floor, app.mode.hideRoom);
+    drawFloor(app, floor);
     return h("section", { class: "plan-screen" }, app.plan.el);
   }
 
@@ -98,7 +100,7 @@ function floorPage(app, floor) {
   let picture;
   if (floor.imageId) {
     app.showPicture(floor);
-    drawRooms(app, floor);
+    drawFloor(app, floor);
     picture = [app.plan.el, button("Replace picture", () => picker.click())];
   } else {
     picture = [

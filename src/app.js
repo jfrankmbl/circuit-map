@@ -8,10 +8,14 @@ import { h, button, toast, clearToast } from "./ui.js";
 import { createPlan } from "./view/plan.js";
 import { welcomeView } from "./view/welcome.js";
 import { setupView } from "./view/setup.js";
+import { placeView } from "./view/place.js";
 import { browseView } from "./view/browse.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
-const TABS = [["floors", "Floors", setupView], ["map", "Map", browseView]];
+const TABS = [["floors", "Floors", setupView], ["add", "Add", placeView], ["map", "Map", browseView]];
+
+// On these tabs the phone is kept awake where the browser allows it, so the screen does not lock during a walk.
+const AWAKE_TABS = ["add"];
 
 const $ = (id) => document.getElementById(id);
 
@@ -139,9 +143,16 @@ function render() {
   const tab = TABS.find((t) => t[0] === app.tab) || TABS[0];
   $("tabs").replaceChildren(...TABS.map(([id, label]) =>
     h("button", { type: "button", "aria-current": tab[0] === id ? "page" : null, onclick: () => app.go(id) }, label)));
+  if (!app.mode) {
+    // No mode is listening, so the view about to be drawn decides what a tap on the plan does.
+    app.plan.onTap = null;
+    app.plan.handles = null;
+  }
   $("screen").replaceChildren(tab[2](app));
+  keepAwake(AWAKE_TABS.includes(tab[0]));
   $("mode-banner").replaceChildren(...(app.mode
-    ? [h("span", {}, app.mode.text), ...app.mode.buttons.map((b) => button(b.text, b.run, b.cls || ""))]
+    ? [h("span", {}, app.mode.text, app.mode.result && h("strong", { class: "result" }, app.mode.result)),
+      ...app.mode.buttons.map((b) => button(b.text, b.run, b.cls || ""))]
     : []));
   const label = undoLabel(app.history);
   $("undo").textContent = label || "Undo";
@@ -162,6 +173,28 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+let wakeLock = null, askingForLock = false;
+
+async function keepAwake(on) {
+  try {
+    if (on && !wakeLock && !askingForLock && navigator.wakeLock && document.visibilityState === "visible") {
+      askingForLock = true;
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+    } else if (!on && wakeLock) {
+      await wakeLock.release();
+    }
+  } catch {
+    // The browser said no (low battery, or no support). Nothing to do.
+  } finally {
+    askingForLock = false;
+  }
+}
+
+// The browser drops the lock when the app is put away; ask again when it comes back.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && app.project) render();
+});
 async function boot() {
   try {
     app.store = await openStore();

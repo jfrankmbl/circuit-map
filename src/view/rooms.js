@@ -1,6 +1,7 @@
 // Rooms: the list on a floor's page, Add room, one room's page, Delete room, and the review after an outline changes.
 import * as m from "../model.js";
-import { suggestCode } from "../ids.js";
+import { roomFields } from "./roomfields.js";
+import { openMarkerSheet } from "./markersheet.js";
 import { displayName } from "../catalog.js";
 import { plural, roomSummary, deleteRoomQuestion, codeProblem, mismatchText } from "../flow.js";
 import { h, button, nameField, openSheet, ask, toast } from "../ui.js";
@@ -24,44 +25,20 @@ export function roomsSection(app, floor) {
   ];
 }
 
-// Name and label code; the code is suggested from the name until he types one himself.
+// Name and label code; then, with a picture to trace on, tap its corners.
 export function addRoomSheet(app, floor) {
   openSheet("Add room", (close) => {
-    const name = h("input", { type: "text", autocomplete: "off", autocorrect: "off", enterKeyHint: "next" });
-    const code = h("input", { type: "text", autocomplete: "off", autocapitalize: "characters", maxLength: 4, enterKeyHint: "done" });
-    const problem = h("p", { class: "error", role: "alert" });
-    let typedCode = false;
-    name.addEventListener("input", () => {
-      if (!typedCode) code.value = name.value.trim() ? suggestCode(name.value, app.project.rooms.map((r) => r.code)) : "";
-    });
-    code.addEventListener("input", () => {
-      typedCode = code.value !== "";
-      code.value = code.value.toUpperCase();
-      problem.textContent = "";
-    });
+    const fresh = roomFields(app);
     const add = (trace) => {
-      const roomName = name.value.trim(), roomCode = code.value.trim();
-      if (!roomName) {
-        problem.textContent = "Give the room a name.";
-        name.focus();
-        return;
-      }
-      const why = codeProblem(app.project, roomCode);
-      if (why) {
-        problem.textContent = why;
-        code.focus();
-        return;
-      }
+      const made = fresh.read();
+      if (!made) return;
       close();
-      const room = app.commit(`added ${roomName}`, (p) => m.addRoom(p, { floorId: floor.id, name: roomName, code: roomCode }));
+      const room = app.commit(`added ${made.name}`, (p) => m.addRoom(p, { floorId: floor.id, name: made.name, code: made.code }));
       if (trace) startTracing(app, floor, room);
     };
-    requestAnimationFrame(() => name.focus());
-    // Tracing needs a picture to trace on.
+    requestAnimationFrame(() => fresh.name.focus());
     return h("form", { onsubmit: (e) => { e.preventDefault(); add(!!floor.imageId); } },
-      h("label", {}, "Room name", name),
-      h("label", {}, CODE_LABEL, code),
-      problem,
+      fresh.fields,
       h("div", { class: "buttons" },
         floor.imageId
           ? [h("button", { type: "submit", class: "main" }, "Add, then tap its corners"), button("Add without an outline", () => add(false))]
@@ -129,8 +106,12 @@ export function reviewOutline(app, room) {
   const found = m.outlineMismatches(app.project, room.id);
   const text = mismatchText(room, found);
   if (!text.outside && !text.inside) return;
-  const row = (d) => h("li", {}, `${d.label}, ${displayName(d)}, ${(m.find(app.project, "rooms", d.roomId) || { name: "no room" }).name}`);
-  openSheet(`The ${room.name} outline changed`, (close) => [
+  openSheet(`The ${room.name} outline changed`, (close) => {
+    const row = (d) => h("li", {}, button(`${d.label}, ${displayName(d)}, ${(m.find(app.project, "rooms", d.roomId) || { name: "no room" }).name}`, () => {
+      close();
+      openMarkerSheet(app, d.id);
+    }));
+    return [
     text.outside && [h("p", {}, text.outside), h("ul", {}, found.outside.map(row))],
     text.inside && [
       h("p", {}, text.inside),
@@ -144,5 +125,6 @@ export function reviewOutline(app, room) {
     ],
     h("p", { class: "small" }, "Nothing has been moved or relabelled."),
     button("Done", close, "main"),
-  ]);
+    ];
+  });
 }

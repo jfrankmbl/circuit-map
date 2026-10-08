@@ -77,7 +77,7 @@ function showAdding(app) {
     text: addingText(displayName(st.choice), room),
     result: st.result,
     buttons: [
-      room && { text: "Change room", run: () => askRoom(app, floor, (r) => { st.roomId = r.id; showAdding(app); }) },
+      room && { text: "Change room", run: () => askRoom(app, floor, (r) => { st.roomId = r.id; st.result = ""; showAdding(app); }) },
       { text: "Done", cls: "main", run: () => app.cancelMode() },
     ].filter(Boolean),
   });
