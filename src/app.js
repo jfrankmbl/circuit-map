@@ -1,10 +1,10 @@
-// The shell: opens the store, loads the project, draws the tabs and the Undo button, and gives each view the `app`
-// object. A view is a function (app) => element, called again after every change.
+// The shell: opens the store, loads the project, draws the tabs, the banner and the Undo button, and gives each view
+// the `app` object. A view is a function (app) => element, called again after every change.
 import * as m from "./model.js";
 import { openStore, memoryStore } from "./store.js";
 import { createHistory, remember, forget, undo, undoLabel } from "./history.js";
 import { startTab } from "./flow.js";
-import { h, toast, clearToast } from "./ui.js";
+import { h, button, toast, clearToast } from "./ui.js";
 import { createPlan } from "./view/plan.js";
 import { welcomeView } from "./view/welcome.js";
 import { setupView } from "./view/setup.js";
@@ -25,6 +25,10 @@ export const app = {
   plan: createPlan(), // one plan for every tab, so zoom and position survive a redraw
   shownImage: "",     // the imageId the plan is showing
   ui: {},             // what views remember between redraws (the open page, reorder mode ...)
+
+  // What he is in the middle of doing on the plan, or null. { text, buttons: [{ text, run, cls }], cancel, floorId, ... }
+  // text and buttons fill the banner; cancel() is what Esc, Undo and changing tab do. A mode may add its own fields.
+  mode: null,
 
   // Make a change. fn(project) edits through model.js; name finishes "Undo: ...". Saves and redraws.
   commit(name, fn) {
@@ -51,6 +55,7 @@ export const app = {
   },
 
   undo() {
+    if (app.mode) app.cancelMode();
     const name = undo(app.history, app.project);
     if (!name) return;
     app.save();
@@ -59,8 +64,30 @@ export const app = {
   },
 
   go(tab) {
+    if (app.mode) app.cancelMode();
     app.tab = tab;
     render();
+  },
+
+  // Start a mode, or change what the current one says. The mode sets plan.onTap and plan.handles itself.
+  setMode(mode) {
+    app.mode = mode;
+    render();
+  },
+
+  // Finish the mode: the banner empties and the plan stops listening.
+  endMode() {
+    if (!app.mode) return;
+    app.mode = null;
+    app.plan.onTap = null;
+    app.plan.handles = null;
+    app.plan.layers.overlay.replaceChildren();
+    render();
+  },
+
+  cancelMode() {
+    if (app.mode && app.mode.cancel) app.mode.cancel();
+    app.endMode();
   },
 
   // The floor being shown. Falls back to the lowest floor; null when the house has none.
@@ -91,7 +118,7 @@ export const app = {
     for (const [id, dataUrl] of Object.entries(images)) {
       await app.store.putImage(id, await (await fetch(dataUrl)).blob());
     }
-    Object.assign(app, { project, history: createHistory(), ui: {}, floorId: "", shownImage: "", tab: startTab(project) });
+    Object.assign(app, { project, history: createHistory(), ui: {}, mode: null, floorId: "", shownImage: "", tab: startTab(project) });
     app.save();
     render();
   },
@@ -112,7 +139,10 @@ function render() {
   const tab = TABS.find((t) => t[0] === app.tab) || TABS[0];
   $("tabs").replaceChildren(...TABS.map(([id, label]) =>
     h("button", { type: "button", "aria-current": tab[0] === id ? "page" : null, onclick: () => app.go(id) }, label)));
-  $("screen").replaceChildren(tab ? tab[2](app) : h("p", { class: "page" }, "Nothing to show yet."));
+  $("screen").replaceChildren(tab[2](app));
+  $("mode-banner").replaceChildren(...(app.mode
+    ? [h("span", {}, app.mode.text), ...app.mode.buttons.map((b) => button(b.text, b.run, b.cls || ""))]
+    : []));
   const label = undoLabel(app.history);
   $("undo").textContent = label || "Undo";
   $("undo").disabled = !label;
@@ -120,12 +150,16 @@ function render() {
 
 $("undo").addEventListener("click", () => app.undo());
 
-// Cmd-Z or Ctrl-Z, unless he is typing in a field (where it should undo typing) or a sheet is open.
 document.addEventListener("keydown", (e) => {
-  if (!(e.metaKey || e.ctrlKey) || e.shiftKey || e.key.toLowerCase() !== "z") return;
-  if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) || document.querySelector("dialog[open]")) return;
-  e.preventDefault();
-  app.undo();
+  if (document.querySelector("dialog[open]")) return; // a sheet handles its own keys
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+  if (e.key === "Escape" && app.mode) {
+    app.cancelMode();
+  } else if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === "z" && !typing) {
+    // In a field Cmd-Z should undo typing, so it is left alone there.
+    e.preventDefault();
+    app.undo();
+  }
 });
 
 async function boot() {
