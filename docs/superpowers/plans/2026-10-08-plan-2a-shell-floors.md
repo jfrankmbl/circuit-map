@@ -651,7 +651,11 @@ export const button = (text, onclick, cls = "") => h("button", { type: "button",
 // Esc and the returned function both close it.
 export function openSheet(title, build) {
   const dialog = h("dialog", { class: "sheet" });
-  const close = () => dialog.close();
+  // Removed here as well as on the close event (which is what Esc fires): the event can come late or not at all.
+  const close = () => {
+    dialog.close();
+    dialog.remove();
+  };
   dialog.addEventListener("close", () => dialog.remove());
   dialog.append(h("h2", {}, title), ...[build(close)].flat(Infinity).filter(Boolean));
   document.body.append(dialog);
