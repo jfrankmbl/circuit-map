@@ -127,6 +127,9 @@ test("refitFloor moves, resizes and turns everything on one floor to fit a new p
   // A quarter turn: the new picture is the old one rotated.
   m.refitFloor(p, main.id, { fromA: [10, 20], fromB: [210, 20], toA: [0, 0], toB: [0, 200] }, 3000);
   assert.deepEqual([d.x, d.y, main.pxPerIn], [0, 100, 4]);
+  // Positions stay whole pixels whatever the fit.
+  m.refitFloor(p, main.id, { fromA: [0, 0], fromB: [3, 0], toA: [0, 0], toB: [1, 0] }, 4000);
+  assert.deepEqual([d.x, d.y], [0, 33]);
   assert.throws(() => m.refitFloor(p, main.id, { fromA: [1, 1], fromB: [1, 1], toA: [0, 0], toB: [5, 5] }, 1), /further apart/);
   assert.throws(() => m.refitFloor(p, main.id, { fromA: [0, 0], fromB: [5, 5], toA: [2, 2], toB: [2, 2] }, 1), /further apart/);
   assert.throws(() => m.refitFloor(p, "nope", { fromA: [0, 0], fromB: [5, 5], toA: [0, 0], toB: [5, 5] }, 1), /no floors record/);

@@ -568,6 +568,13 @@ Append to the end of the file:
 
 dialog.sheet form > * + * { margin-top: 12px; }
 dialog.sheet ul { margin: 0; padding-left: 24px; }
+
+/* The bar under the plan: the mode text takes a full line, its buttons follow, and Undo keeps to the right. */
+#mode-bar { flex-wrap: wrap; }
+#mode-banner:empty { display: none; }
+#mode-banner > span { flex: 1 1 100%; }
+#undo { margin-left: auto; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 699px) { #mode-banner { flex: 1 1 100%; } }
 ```
 
 - [ ] **Step 5: Check and commit**
@@ -1546,7 +1553,7 @@ Rooms:
 1. The floor's page now has Picture, Scale (optional) and Rooms, in that order. Rooms says "No rooms yet. Add one, then tap its corners on the plan."
 2. Add room: typing `Kitchen` fills the code with `KIT`. Clear the code and type `k1`: it becomes `K1`. Put `KIT` back. "Add, then tap its corners": the plan fills the screen and the banner reads "Tracing Kitchen: tap each corner" with Cancel.
 3. Tap four corners. Each tap adds a dot and the line grows; Undo corner takes the last away; from three corners there is a Finish room button and the banner mentions the first corner. Dragging still pans and the wheel still zooms, without adding corners. Tap the first corner: the banner reads "Kitchen added." with Add another room and Done, and the room shows as a blue tint with its name inside, the same size on screen at any zoom.
-4. Add another room, `Kitchen 2`: the code offered is `KIT2`. Change it to `KIT`: "KIT is already used by Kitchen. Pick another." in red and the sheet stays. Use `K2`, trace it as a bow tie (four corners whose lines cross) and Finish room: a toast says "The lines cross. Undo the last corner or drag a corner." and tracing continues. Cancel: toast "Kitchen 2 has no outline yet...". Its row reads "0 devices, no outline".
+4. Add another room, `Kitchen 2`: the code offered is `K2`. Change it to `KIT`: "KIT is already used by Kitchen. Pick another." in red and the sheet stays. Keep `K2`, trace it as a bow tie (four corners whose lines cross) and Finish room: a toast says "The lines cross. Undo the last corner or drag a corner." and tracing continues. Cancel: toast "Kitchen 2 has no outline yet...". Its row reads "0 devices, no outline".
 5. Open Kitchen: rename it to `Big kitchen` and leave the field; the header of the page and the name on the plan follow. Change the code to `BK`: accepted.
 6. Edit outline: corners are white dots, sides carry a blue "+". Drag a corner: it follows the pointer and the shape redraws. Tap a "+": a corner appears there, shown picked (red), and Remove corner is offered; tap it and the corner goes. Tap a corner once: it turns red, nothing is removed. Done: back on the floor's page with the new shape. Undo reads "Undo: changed the Big kitchen outline".
 7. Edit outline again, Start over: "Outline cleared." with Undo and tracing starts. Tap Undo in the toast: the outline is back and tracing has ended.

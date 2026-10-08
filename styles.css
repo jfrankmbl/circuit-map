@@ -104,3 +104,10 @@ dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.45); }
 
 dialog.sheet form > * + * { margin-top: 12px; }
 dialog.sheet ul { margin: 0; padding-left: 24px; }
+
+/* The bar under the plan: the mode text takes a full line, its buttons follow, and Undo keeps to the right. */
+#mode-bar { flex-wrap: wrap; }
+#mode-banner:empty { display: none; }
+#mode-banner > span { flex: 1 1 100%; }
+#undo { margin-left: auto; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 699px) { #mode-banner { flex: 1 1 100%; } }

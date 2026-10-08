@@ -100,7 +100,7 @@ export function refitFloor(project, floorId, { fromA, fromB, toA, toB }, now = D
   const sr = (tx * fx + ty * fy) / len2, si = (ty * fx - tx * fy) / len2;
   const fit = ([x, y]) => {
     const dx = x - fromA[0], dy = y - fromA[1];
-    return [sr * dx - si * dy + toA[0], si * dx + sr * dy + toA[1]];
+    return [Math.round(sr * dx - si * dy + toA[0]), Math.round(si * dx + sr * dy + toA[1])]; // whole picture pixels
   };
   const moved = { devices: 0, rooms: 0 };
   for (const d of project.devices) {

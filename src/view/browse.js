@@ -1,11 +1,14 @@
-// The Map tab. In this plan it shows the floor buttons and the plan; markers, search and details come with Plans 2c and 2d.
+// The Map tab. For now it shows the floor buttons and the plan with its room outlines; markers, search and details
+// come with Plans 2c and 2d.
 import { h, button } from "../ui.js";
 import { floorSwitch } from "./floorswitch.js";
+import { drawRooms } from "./roomlayer.js";
 
 export function browseView(app) {
   const floor = app.floor();
   const toFloors = (floorId) => {
     app.ui.floorPage = floorId;
+    app.ui.roomPage = "";
     app.go("floors");
   };
   if (!floor) {
@@ -21,5 +24,6 @@ export function browseView(app) {
         button("Choose a picture", () => toFloors(floor.id), "main")));
   }
   app.showPicture(floor);
+  drawRooms(app, floor);
   return h("section", { class: "plan-screen" }, floorSwitch(app), app.plan.el);
 }

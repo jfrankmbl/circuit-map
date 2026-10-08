@@ -1,8 +1,12 @@
-// The Floors tab: the list of floors, and one floor's page (name, picture, delete).
+// The Floors tab: the list of floors, and one floor's page (name, picture, scale, rooms, delete).
 import * as m from "../model.js";
 import { checklist, floorSummary, deleteFloorQuestion, floorAfterDelete } from "../flow.js";
 import { readPicture, drawPicture, canvasBlob } from "../picture.js";
-import { h, button, openSheet, ask, toast } from "../ui.js";
+import { h, button, nameField, openSheet, ask, toast } from "../ui.js";
+import { drawRooms } from "./roomlayer.js";
+import { roomsSection, roomPage } from "./rooms.js";
+import { scaleSection } from "./scale.js";
+import { startLineUp } from "./lineup.js";
 
 const FLOOR_NAMES = ["Basement", "Main floor", "Upstairs", "Attic"];
 
@@ -13,27 +17,15 @@ export function setupView(app) {
 
 function openFloor(app, id) {
   app.ui.floorPage = id;
+  app.ui.roomPage = "";
   app.floorId = id;
   app.render();
-}
-
-// A text field that saves when he leaves it or taps the keyboard's Done. An empty name is put back as it was.
-function nameField(value, save) {
-  const input = h("input", {
-    type: "text", value, autocomplete: "off", enterKeyHint: "done",
-    onchange: () => {
-      const next = input.value.trim();
-      if (next && next !== value) save(next);
-      else input.value = value;
-    },
-  });
-  return input;
 }
 
 function checklistEl(project) {
   const steps = checklist(project);
   if (steps.every((s) => s.done)) return null;
-  return h("ol", { class: "checklist" }, steps.map((s) => h("li", { class: s.done ? "done" : "" }, (s.done ? "\u2713 " : "") + s.text)));
+  return h("ol", { class: "checklist" }, steps.map((s) => h("li", { class: s.done ? "done" : "" }, (s.done ? "✓ " : "") + s.text)));
 }
 
 function floorList(app) {
@@ -75,7 +67,7 @@ function addFloorSheet(app) {
       h("div", { class: "buttons" }, FLOOR_NAMES.filter((n) => !taken.has(n)).map((n) => button(n, () => add(n)))),
       h("form", { onsubmit: (e) => { e.preventDefault(); add(input.value); } },
         h("label", {}, "Or type a name", input),
-        h("div", { class: "buttons", style: "margin-top: 12px" },
+        h("div", { class: "buttons" },
           h("button", { type: "submit", class: "main" }, "Add"),
           button("Cancel", close))),
     ];
@@ -84,6 +76,17 @@ function addFloorSheet(app) {
 
 function floorPage(app, floor) {
   const p = app.project;
+
+  // In the middle of something on this floor's plan (tracing, editing, scale, line-up): the plan takes the screen.
+  if (app.mode && app.mode.floorId === floor.id) {
+    if (!app.mode.ownPicture) app.showPicture(floor);
+    drawRooms(app, app.mode.noRooms ? null : floor, app.mode.hideRoom);
+    return h("section", { class: "plan-screen" }, app.plan.el);
+  }
+
+  const room = m.find(p, "rooms", app.ui.roomPage || "");
+  if (room && room.floorId === floor.id) return roomPage(app, floor, room);
+
   const picker = h("input", {
     type: "file", accept: "image/*,application/pdf", hidden: true,
     onchange: () => {
@@ -92,12 +95,11 @@ function floorPage(app, floor) {
       if (file) choosePicture(app, floor, file);
     },
   });
-  // Replacing the picture under rooms or devices needs the line-up step, which comes with rooms in Plan 2b.
-  const used = p.rooms.some((r) => r.floorId === floor.id) || p.devices.some((d) => d.floorId === floor.id);
   let picture;
   if (floor.imageId) {
     app.showPicture(floor);
-    picture = [app.plan.el, !used && button("Replace picture", () => picker.click())];
+    drawRooms(app, floor);
+    picture = [app.plan.el, button("Replace picture", () => picker.click())];
   } else {
     picture = [
       h("p", {}, "Next: add a picture of the floor."),
@@ -107,16 +109,20 @@ function floorPage(app, floor) {
   return h("section", { class: "page floor-page" },
     button("Back to floors", () => {
       app.ui.floorPage = "";
+      app.ui.roomPage = "";
       app.render();
     }),
     h("label", {}, "Floor name", nameField(floor.name, (name) => app.commit(`renamed ${floor.name}`, (p) => m.update(p, "floors", floor.id, { name })))),
     h("h2", {}, "Picture"),
     picture,
     picker,
+    scaleSection(app, floor),
+    roomsSection(app, floor),
     button("Delete floor", () => deleteFloor(app, floor), "plain danger"));
 }
 
-// Show the chosen picture with Rotate buttons; Use this picture shrinks it, stores it and puts it on the floor.
+// Show the chosen picture with Rotate buttons. Use this picture shrinks it and puts it on the floor; if the floor
+// already has a picture with rooms or devices on it, the line-up step comes first so they follow the new one.
 async function choosePicture(app, floor, file) {
   if (file.type === "application/pdf") {
     toast("A PDF can't be opened yet. Take a screenshot of the page and choose that.");
@@ -129,6 +135,8 @@ async function choosePicture(app, floor, file) {
     ask("That picture can't be used", err.message, [{ text: "OK", cls: "main" }]);
     return;
   }
+  const p = app.project;
+  const lineUp = !!floor.imageId && (p.rooms.some((r) => r.floorId === floor.id && r.outline.length) || p.devices.some((d) => d.floorId === floor.id));
   let turns = 0;
   const canvas = h("canvas", { class: "preview" });
   const draw = () => drawPicture(canvas, bitmap, turns);
@@ -140,8 +148,14 @@ async function choosePicture(app, floor, file) {
       btn.disabled = true;
       status.textContent = "Preparing picture...";
       try {
+        const blob = await canvasBlob(canvas);
+        if (lineUp) {
+          close();
+          startLineUp(app, floor, blob);
+          return;
+        }
         const imageId = m.newId();
-        await app.store.putImage(imageId, await canvasBlob(canvas));
+        await app.store.putImage(imageId, blob);
         close();
         app.commit(`added a picture to ${floor.name}`, (p) => m.update(p, "floors", floor.id, { imageId }));
       } catch {
