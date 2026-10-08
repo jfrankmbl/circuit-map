@@ -63,3 +63,16 @@ export function toast(text, action) {
     })));
   toastTimer = setTimeout(clearToast, action ? 30000 : 4000);
 }
+
+// A text field that saves when he leaves it or taps the keyboard's Done. An empty name is put back as it was.
+export function nameField(value, save) {
+  const input = h("input", {
+    type: "text", value, autocomplete: "off", autocorrect: "off", enterKeyHint: "done",
+    onchange: () => {
+      const next = input.value.trim();
+      if (next && next !== value) save(next);
+      else input.value = value;
+    },
+  });
+  return input;
+}
