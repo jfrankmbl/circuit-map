@@ -29,12 +29,14 @@ export function glyph(type) {
 // pulse: the id of a device just placed (it wears a ring and its label for two seconds).
 // moving: { id, x, y } for the device being moved, drawn there and draggable.
 // ringed: a Set of ids to ring and tick.
-export function drawMarkers(app, floor, { pulse = "", moving = null, ringed = null } = {}) {
-  const devices = floor ? app.project.devices.filter((d) => d.floorId === floor.id) : [];
+// only: a Set of ids; devices not in it are left out (a search or filter).
+// picked: the id of the device whose details are showing (it wears a ring and its label).
+export function drawMarkers(app, floor, { pulse = "", moving = null, ringed = null, only = null, picked = "" } = {}) {
+  const devices = floor ? app.project.devices.filter((d) => d.floorId === floor.id && (!only || only.has(d.id))) : [];
   app.plan.layers.markers.replaceChildren(...devices.map((d) => {
     const room = m.find(app.project, "rooms", d.roomId);
     const held = moving && moving.id === d.id;
-    const ring = d.id === pulse || (ringed && ringed.has(d.id));
+    const ring = d.id === pulse || d.id === picked || (ringed && ringed.has(d.id));
     const at = held ? moving : d;
     return fixedAt(at.x, at.y, {
       class: "marker" + (d.id === pulse ? " pulse" : "") + (held ? " moving" : ""),
@@ -48,15 +50,16 @@ export function drawMarkers(app, floor, { pulse = "", moving = null, ringed = nu
       d.notWorking && svg("text", { class: "marker-badge", x: 9, y: -7 }, "!"),
       d.plateLabel && svg("text", { class: "marker-badge", x: -22, y: -7 }, "✎"),
       ringed && ringed.has(d.id) && svg("text", { class: "marker-badge", x: 9, y: 18 }, "✓"),
-      d.id === pulse && svg("text", { class: "marker-label", y: 32 }, d.label));
+      (d.id === pulse || d.id === picked) && svg("text", { class: "marker-label", y: 32 }, d.label));
   }));
 }
 
 // Everything on a floor: its room outlines and its devices. The mode in progress and the views say what to
 // leave out, ring, pulse or drag.
-export function drawFloor(app, floor) {
+// extra: { only, picked } from the view (see drawMarkers).
+export function drawFloor(app, floor, extra = {}) {
   const mode = app.mode || {};
   const shown = mode.noRooms ? null : floor;
   drawRooms(app, shown, mode.hideRoom);
-  drawMarkers(app, shown, { pulse: app.ui.pulse || "", moving: mode.moving || null, ringed: mode.ringed || null });
+  drawMarkers(app, shown, { pulse: app.ui.pulse || "", moving: mode.moving || null, ringed: mode.ringed || null, ...extra });
 }
