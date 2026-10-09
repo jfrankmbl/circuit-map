@@ -31,7 +31,8 @@ export function glyph(type) {
 // ringed: a Set of ids to ring and tick.
 // only: a Set of ids; devices not in it are left out (a search or filter).
 // picked: the id of the device whose details are showing (it wears a ring and its label).
-export function drawMarkers(app, floor, { pulse = "", moving = null, ringed = null, only = null, picked = "" } = {}) {
+// dim: a Set of ids drawn faint with a dashed outline (things that cannot be used in the current mode).
+export function drawMarkers(app, floor, { pulse = "", moving = null, ringed = null, only = null, picked = "", dim = null } = {}) {
   const devices = floor ? app.project.devices.filter((d) => d.floorId === floor.id && (!only || only.has(d.id))) : [];
   app.plan.layers.markers.replaceChildren(...devices.map((d) => {
     const room = m.find(app.project, "rooms", d.roomId);
@@ -39,7 +40,7 @@ export function drawMarkers(app, floor, { pulse = "", moving = null, ringed = nu
     const ring = d.id === pulse || d.id === picked || (ringed && ringed.has(d.id));
     const at = held ? moving : d;
     return fixedAt(at.x, at.y, {
-      class: "marker" + (d.id === pulse ? " pulse" : "") + (held ? " moving" : ""),
+      class: "marker" + (d.id === pulse ? " pulse" : "") + (held ? " moving" : "") + (dim && dim.has(d.id) ? " dim" : ""),
       "data-handle": held ? d.id : null,
     },
       svg("title", {}, `${d.label}, ${displayName(d)}${room ? ", " + room.name : ""}`),
@@ -61,5 +62,8 @@ export function drawFloor(app, floor, extra = {}) {
   const mode = app.mode || {};
   const shown = mode.noRooms ? null : floor;
   drawRooms(app, shown, mode.hideRoom);
-  drawMarkers(app, shown, { pulse: app.ui.pulse || "", moving: mode.moving || null, ringed: mode.ringed || null, ...extra });
+  drawMarkers(app, shown, {
+    pulse: app.ui.pulse || "", moving: mode.moving || null, ringed: mode.ringed || null,
+    picked: mode.picked || "", dim: mode.dim || null, ...extra,
+  });
 }

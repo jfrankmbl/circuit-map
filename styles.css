@@ -164,3 +164,8 @@ input[type="search"] { flex: 1; min-width: 9em; min-height: 44px; padding: 8px 1
   .map-body { flex-direction: row; }
   .details { width: 340px; max-height: none; border-top: 0; border-left: 1px solid var(--line); }
 }
+
+/* The Switches tab */
+.marker.dim { opacity: 0.45; }
+.marker.dim .body { stroke-dasharray: 3 2; }
+.link-line { stroke: #b3261e; stroke-width: 2px; vector-effect: non-scaling-stroke; pointer-events: none; }
