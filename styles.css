@@ -244,3 +244,11 @@ button.dead-toggle[aria-pressed="true"] { border-color: var(--danger); }
   .paper { margin: 0; padding: 0; zoom: 1 !important; }
   .sheet-page + .sheet-page { margin: 0; padding: 0; border: 0; break-before: page; }
 }
+
+/* The chip in the header, and the calm banner (the nudge to back up is not an alarm). */
+#chip { flex: none; }
+.narrow-only { display: inline; }
+@media (min-width: 700px) { .narrow-only { display: none; } }
+#top-banner.calm { background: var(--panel); color: var(--fg); border-bottom: 1px solid var(--line); font-weight: 400; }
+#top-banner.calm span { flex: 1 1 240px; }
+#top-banner.calm button { border-color: var(--line); }

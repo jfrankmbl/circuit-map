@@ -14,6 +14,8 @@ import { panelView } from "./view/panel.js";
 import { breakerName } from "./panel.js";
 import { backOn, askBackOn } from "./view/test.js";
 import { browseView, deleteSelected } from "./view/browse.js";
+import { chipText, needsBackup } from "./sending.js";
+import { sendSheet, exportSheet } from "./view/send.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
 const TABS = [["floors", "Floors", setupView], ["add", "Add", placeView], ["link", "Switches", linkView], ["panel", "Breakers", panelView], ["map", "Map", browseView]];
@@ -121,14 +123,36 @@ export const app = {
     else app.plan.setMessage("This floor's picture is missing. Choose it again on the Floors tab.");
   },
 
-  // Start using a project: a new house, or one read from a file (images: { imageId: data URL }).
-  async adopt(project, images = {}) {
-    for (const [id, dataUrl] of Object.entries(images)) {
+  // Start using a project: a new house, or one read from a file (images: { imageId: data URL }). What came from a
+  // file is not this device's work, so there is nothing new to send.
+  async adopt(project, images) {
+    for (const [id, dataUrl] of Object.entries(images || {})) {
       await app.store.putImage(id, await (await fetch(dataUrl)).blob());
     }
-    Object.assign(app, { project, history: createHistory(), ui: {}, mode: null, test: null, floorId: "", shownImage: "", tab: startTab(project) });
+    Object.assign(app, { project, history: createHistory(), ui: {}, mode: null, test: null, floorId: "", shownImage: "", tab: startTab(project),
+      sentAt: images ? Date.now() : 0, nudge: false });
+    app.store.setSetting("sent", app.sentAt).catch(() => {});
     app.saveTest();
     app.save();
+    render();
+  },
+
+  // When this device last finished sending the project (see sending.js), 0 if never. Not in the project file.
+  sentAt: 0,
+  // True while "Back up your work" should show. Decided when the app opens.
+  nudge: false,
+
+  markSent(at) {
+    app.sentAt = at;
+    app.nudge = false;
+    app.store.setSetting("sent", at).catch(() => {});
+    render();
+  },
+
+  // Later on the backup nudge: hide it for a day.
+  later() {
+    app.nudge = false;
+    app.store.setSetting("later", Date.now()).catch(() => {});
     render();
   },
 
@@ -150,18 +174,25 @@ export const app = {
 function render() {
   const p = app.project;
   document.body.classList.toggle("no-project", !p);
-  // One banner at the top at a time, the most pressing first: a breaker that is off (safety), then not saving.
+  // One banner at the top at a time, the most pressing first: a breaker that is off (safety), then not saving, then
+  // the nudge to back up.
   const off = p && app.test && app.test.off && m.find(p, "breakers", app.test.breakerId);
-  $("top-banner").hidden = !off && !app.notSaved;
+  const nudge = !!p && !off && !app.notSaved && app.nudge;
+  $("top-banner").hidden = !off && !app.notSaved && !nudge;
+  $("top-banner").classList.toggle("calm", nudge);
   $("top-banner").replaceChildren(...(
     off ? [h("strong", {}, `Breaker ${breakerName(off)} is OFF`), button("I've switched it back on", () => backOn(app))]
     : app.notSaved ? ["Changes are not being saved on this device."]
+    : nudge ? [h("span", {}, "Back up your work: send a copy to your Mac, or save it to iCloud Drive."),
+      button("Send or back up", () => exportSheet(app)), button("Later", app.later)]
     : []));
   if (!p) {
     $("screen").replaceChildren(welcomeView(app));
     return;
   }
   $("house").textContent = p.name;
+  const chip = chipText(m.changesSince(p, app.sentAt));
+  $("chip").replaceChildren(h("span", { class: "wide-only" }, chip.wide), h("span", { class: "narrow-only" }, chip.narrow));
   const tab = TABS.find((t) => t[0] === app.tab) || TABS[0];
   $("tabs").replaceChildren(...TABS.map(([id, label]) =>
     h("button", { type: "button", "aria-current": tab[0] === id ? "page" : null, onclick: () => app.go(id) }, label)));
@@ -182,6 +213,7 @@ function render() {
 }
 
 $("undo").addEventListener("click", () => app.undo());
+$("chip").addEventListener("click", () => sendSheet(app));
 
 document.addEventListener("keydown", (e) => {
   if (document.querySelector("dialog[open]")) return; // a sheet handles its own keys
@@ -231,6 +263,8 @@ async function boot() {
   if (app.project) {
     await app.store.pruneImages(app.project.floors.map((f) => f.imageId).filter(Boolean));
     app.tab = startTab(app.project);
+    app.sentAt = await app.store.getSetting("sent", 0);
+    app.nudge = needsBackup(app.project, app.sentAt, await app.store.getSetting("later", 0));
     app.test = await app.store.getSetting("test", null);
     if (app.test && !m.find(app.project, "breakers", app.test.breakerId)) app.test = null;
   }
