@@ -1,0 +1,9 @@
+{
+  "name": "Circuit Map",
+  "short_name": "Circuit Map",
+  "start_url": "./",
+  "display": "fullscreen",
+  "background_color": "#ffffff",
+  "theme_color": "#0b57d0",
+  "icons": [{ "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" }]
+}

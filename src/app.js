@@ -4,7 +4,7 @@ import * as m from "./model.js";
 import { openStore, memoryStore } from "./store.js";
 import { createHistory, remember, forget, undo, undoLabel } from "./history.js";
 import { startTab, plural } from "./flow.js";
-import { h, button, toast, clearToast } from "./ui.js";
+import { h, button, toast, clearToast, ask } from "./ui.js";
 import { createPlan } from "./view/plan.js";
 import { welcomeView } from "./view/welcome.js";
 import { setupView } from "./view/setup.js";
@@ -18,6 +18,7 @@ import { chipText, needsBackup, unsent } from "./sending.js";
 import { exportSheet } from "./view/send.js";
 import { sendSheet } from "./view/movesheet.js";
 import { platesSheet } from "./view/plates.js";
+import { inIphoneTab, HOME_NOTE } from "./homescreen.js";
 import { importFile } from "./view/bringin.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
@@ -327,6 +328,12 @@ async function boot() {
   }
   render();
   if (app.test && app.test.off) askBackOn(app);
+  // Once: a Safari tab that already holds a house. The Home Screen app would start empty.
+  const tab = inIphoneTab({ ua: navigator.userAgent, platform: navigator.platform, touchPoints: navigator.maxTouchPoints, standalone: !!navigator.standalone });
+  if (app.project && tab && !(await app.store.getSetting("homeNote", false))) {
+    app.store.setSetting("homeNote", true).catch(() => {});
+    ask("Before you add this to your Home Screen", HOME_NOTE, [{ text: "OK", cls: "main" }]);
+  }
 }
 
 boot();

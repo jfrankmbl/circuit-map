@@ -5,12 +5,16 @@ import { parse } from "../file.js";
 import { describeFile } from "../flow.js";
 import { h, button } from "../ui.js";
 import { movingCard } from "./movesheet.js";
+import { inIphoneTab, HOME_CARD } from "../homescreen.js";
 
 export function welcomeView(app) {
   if (app.ui.naming) return nameScreen(app);
   if (app.ui.offered) return offerScreen(app);
   if (app.ui.finding) return findScreen(app);
   const el = h("section", { class: "page" },
+    !app.ui.homeSkipped && inIphoneTab({ ua: navigator.userAgent, platform: navigator.platform, touchPoints: navigator.maxTouchPoints, standalone: !!navigator.standalone })
+      && h("div", { class: "card home-card" }, h("p", {}, HOME_CARD),
+        button("Start here anyway", () => { app.ui.homeSkipped = true; app.render(); }, "plain")),
     h("h1", {}, "Circuit Map"),
     h("p", {}, "Map the outlets, switches, lights and breakers of your house on your own floor plan."),
     h("div", { class: "buttons equal" },

@@ -36,3 +36,8 @@ export function canvasBlob(canvas) {
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("The picture could not be saved."))), "image/jpeg", 0.85);
   });
 }
+
+// How much to scale a PDF page (w x h points) so its longest side is `longSide` pixels.
+export function pdfScale(w, h, longSide = MAX_SIDE) {
+  return longSide / Math.max(w, h, 1);
+}

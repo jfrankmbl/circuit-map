@@ -278,3 +278,8 @@ body:has(.print-page) #mode-bar { display: none; } /* the Undo bar offers action
 #top-banner.calm { background: var(--panel); color: var(--fg); border-bottom: 1px solid var(--line); font-weight: 400; }
 #top-banner.calm span { flex: 1 1 240px; }
 #top-banner.calm button { border-color: var(--line-strong); }
+
+/* PDF page thumbnails */
+.pages { display: flex; flex-wrap: wrap; gap: 12px; max-height: 50vh; overflow: auto; }
+button.page-thumb { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; }
+button.page-thumb canvas { max-width: 140px; max-height: 140px; }

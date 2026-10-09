@@ -1,7 +1,8 @@
 // The Floors tab: the list of floors, and one floor's page (name, picture, scale, rooms, delete).
 import * as m from "../model.js";
 import { checklist, floorSummary, deleteFloorQuestion, floorAfterDelete } from "../flow.js";
-import { readPicture, drawPicture, canvasBlob } from "../picture.js";
+import { readPicture, drawPicture, canvasBlob, MAX_SIDE } from "../picture.js";
+import { pickPdfPage } from "./pdfpage.js";
 import { h, button, nameField, openSheet, ask, toast } from "../ui.js";
 import { drawFloor } from "./markers.js";
 import { roomsSection, roomPage } from "./rooms.js";
@@ -127,17 +128,14 @@ function floorPage(app, floor) {
 // Show the chosen picture with Rotate buttons. Use this picture shrinks it and puts it on the floor; if the floor
 // already has a picture with rooms or devices on it, the line-up step comes first so they follow the new one.
 async function choosePicture(app, floor, file) {
-  if (file.type === "application/pdf") {
-    toast("A PDF can't be opened yet. Take a screenshot of the page and choose that.");
-    return;
-  }
   let bitmap;
   try {
-    bitmap = await readPicture(file);
+    bitmap = file.type === "application/pdf" ? await pickPdfPage(file, MAX_SIDE) : await readPicture(file);
   } catch (err) {
     ask("That picture can't be used", err.message, [{ text: "OK", cls: "main" }]);
     return;
   }
+  if (!bitmap) return; // he cancelled the page choice
   const p = app.project;
   const lineUp = !!floor.imageId && (p.rooms.some((r) => r.floorId === floor.id && r.outline.length) || p.devices.some((d) => d.floorId === floor.id));
   let turns = 0;

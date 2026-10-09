@@ -1,0 +1,1 @@
+pdfjs-dist 4.10.38 (Apache-2.0), from https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-4.10.38.tgz, sha1 3ee698003790dc266cc8b55c0e662ccb9ae18f53. Files: build/pdf.min.mjs, build/pdf.worker.min.mjs, LICENSE.
