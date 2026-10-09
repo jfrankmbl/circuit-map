@@ -192,3 +192,6 @@ button.numbering { display: flex; align-items: center; gap: 12px; text-align: le
 .card h3 { margin: 8px 0 0; font-size: 22px; }
 .card ul { margin: 0; padding-left: 24px; }
 .page h3 { margin: 8px 0 0; font-size: 18px; }
+
+/* Five tabs on a phone: tighter, at the smallest text size allowed, so the words do not run into each other. */
+@media (max-width: 699px) { #tabs button { padding: 8px 2px; font-size: 16px; } }

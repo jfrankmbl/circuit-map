@@ -8,6 +8,7 @@ import { h, button, openSheet, ask, toast } from "../ui.js";
 import { floorSwitch } from "./floorswitch.js";
 import { drawFloor, glyph } from "./markers.js";
 import { openMarkerSheet } from "./markersheet.js";
+import { showOnPanel } from "./panel.js";
 
 const REACH = 22; // screen pixels: half of a 44-point target
 const FILTERS = [["", "All"], ["outlet", "Outlets"], ["switch", "Switches"], ["light", "Lights"], ["other", "Other"]];
@@ -128,7 +129,7 @@ function detailsEl(app, d) {
     h("h2", {}, titleText(d)),
     h("p", {}, `${displayName(d)}, ${room ? room.name : "no room"}, ${floor.name}`),
     d.notWorking && h("p", { class: "error" }, "Not working"),
-    line("Breaker", circuitText(p, d)),
+    line("Breaker", circuitText(p, d), d.breakerId && [" ", button("Show on panel", () => showOnPanel(app, d.breakerId))]),
     line("Height", heightText(d.heightIn)),
     d.note && line("Note", d.note),
     gfci && line("Behind GFCI outlet", gfci.label, " ", show(gfci.id, gfci.label)),

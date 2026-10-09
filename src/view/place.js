@@ -11,6 +11,7 @@ import { drawFloor, glyph } from "./markers.js";
 import { openPalette } from "./palette.js";
 import { roomFields } from "./roomfields.js";
 import { openMarkerSheet } from "./markersheet.js";
+import { askWhichPanel } from "./panel.js";
 
 const REACH = 22; // screen pixels: half of a 44-point target
 let pulseTimer = 0;
@@ -114,6 +115,7 @@ function place(app, floor, room, x, y) {
     app.render();
   }, 2000);
   showAdding(app);
+  if (type === "BP" || type === "SP") askWhichPanel(app, device.id);
 }
 
 // "Which room is it in?": this floor's rooms, the last one used first, and New room (which has no outline).

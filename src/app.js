@@ -10,13 +10,14 @@ import { welcomeView } from "./view/welcome.js";
 import { setupView } from "./view/setup.js";
 import { placeView } from "./view/place.js";
 import { linkView } from "./view/link.js";
+import { panelView } from "./view/panel.js";
 import { browseView, deleteSelected } from "./view/browse.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
-const TABS = [["floors", "Floors", setupView], ["add", "Add", placeView], ["link", "Switches", linkView], ["map", "Map", browseView]];
+const TABS = [["floors", "Floors", setupView], ["add", "Add", placeView], ["link", "Switches", linkView], ["panel", "Breakers", panelView], ["map", "Map", browseView]];
 
 // On these tabs the phone is kept awake where the browser allows it, so the screen does not lock during a walk.
-const AWAKE_TABS = ["add"];
+const AWAKE_TABS = ["add", "panel"];
 
 const $ = (id) => document.getElementById(id);
 

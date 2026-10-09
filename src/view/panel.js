@@ -262,7 +262,8 @@ function breakerPage(app, breaker) {
     h("h2", {}, breakerTitle(breaker)),
     h("p", {}, [`${breaker.amps} A`, KIND_WORDS[breaker.kind], breaker.poles === 2 && "240 V"].filter(Boolean).join(", ")),
     sum.feeds.map((sub) => h("div", { class: "buttons" }, h("strong", {}, `Feeds ${sub.name}`), button(`Open ${sub.name}`, () => show(app, { panelId: sub.id, page: "" })))),
-    sum.text ? h("p", {}, sum.text) : !sum.more && h("p", {}, "Nothing found on this breaker yet. Test it to find out."),
+    // A breaker that feeds a subpanel is not tested itself: its devices belong to the subpanel's breakers.
+    sum.text ? h("p", {}, sum.text) : !sum.feeds.length && h("p", {}, "Nothing found on this breaker yet. Test it to find out."),
     groups(sum.direct),
     sum.more && button(sum.more, () => openSheet(`Through ${sum.feeds.map((f) => f.name).join(" and ")}`, (close) => [
       h("div", { class: "scroll" }, groups(sum.downstream, close)),

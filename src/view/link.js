@@ -48,7 +48,8 @@ export function linkView(app) {
     floorSwitch(app),
     h("div", { class: "pick-row" },
       h("strong", {}, progressText(progress)),
-      progress.todo.length > 0 && button(`Still to do (${progress.todo.length})`, () => todoSheet(app, progress.todo))),
+      progress.todo.length > 0 && button(`Still to do (${progress.todo.length})`, () => todoSheet(app, progress.todo)),
+      progress.todo.length === 0 && !app.mode && button("Next: test your breakers", () => app.go("panel"), "main")),
     !app.mode && h("p", { class: "plan-hint" }, "Tap a switch, then tap what it controls. Or tap a light or outlet to see what switches it."),
     main);
 }

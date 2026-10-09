@@ -9,6 +9,8 @@ import { plural, typeChangeWarning, togglesWarning, heightText } from "../flow.j
 import { h, button, openSheet, ask, toast } from "../ui.js";
 import { drawFloor } from "./markers.js";
 import { openPalette } from "./palette.js";
+import { circuitText } from "../browse.js";
+import { startPickingBreaker } from "./panel.js";
 
 const REACH = 22; // screen pixels: half of a 44-point target
 
@@ -66,6 +68,8 @@ export function openMarkerSheet(app, id, opts = {}) {
         floors.length > 1 && button("Move to another floor", () => { close(); startMovingFloor(app, id); })),
       row("Type", displayName(d), () => { close(); openPalette(app, "What is it?", (choice) => changeType(app, id, choice)); }),
       row("Room", room ? room.name : "No room", () => { close(); changeRoom(app, id); }),
+      // Only for things a breaker feeds. A pick made here is a guess.
+      typeInfo(d.type).sweep && row("Breaker", circuitText(p, d), () => { close(); startPickingBreaker(app, id); }),
       h("label", {}, "Note", note),
       isSwitch(d.type) && h("div", { class: "buttons", role: "group", "aria-label": "Switches on this plate" },
         h("strong", {}, "Switches on this plate"),
