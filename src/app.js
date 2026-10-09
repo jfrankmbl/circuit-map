@@ -11,6 +11,8 @@ import { setupView } from "./view/setup.js";
 import { placeView } from "./view/place.js";
 import { linkView } from "./view/link.js";
 import { panelView } from "./view/panel.js";
+import { breakerName } from "./panel.js";
+import { backOn, askBackOn } from "./view/test.js";
 import { browseView, deleteSelected } from "./view/browse.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
@@ -124,9 +126,18 @@ export const app = {
     for (const [id, dataUrl] of Object.entries(images)) {
       await app.store.putImage(id, await (await fetch(dataUrl)).blob());
     }
-    Object.assign(app, { project, history: createHistory(), ui: {}, mode: null, floorId: "", shownImage: "", tab: startTab(project) });
+    Object.assign(app, { project, history: createHistory(), ui: {}, mode: null, test: null, floorId: "", shownImage: "", tab: startTab(project) });
+    app.saveTest();
     app.save();
     render();
+  },
+
+  // The breaker test in progress (see testing.js), or null. Kept on this device, not in the project file, so the
+  // "breaker is OFF" bar survives closing the app.
+  test: null,
+
+  saveTest() {
+    app.store.setSetting("test", app.test && !app.test.done ? app.test : null).catch(() => {});
   },
 
   render,
@@ -135,8 +146,13 @@ export const app = {
 function render() {
   const p = app.project;
   document.body.classList.toggle("no-project", !p);
-  $("top-banner").hidden = !app.notSaved;
-  $("top-banner").textContent = app.notSaved ? "Changes are not being saved on this device." : "";
+  // One banner at the top at a time, the most pressing first: a breaker that is off (safety), then not saving.
+  const off = p && app.test && app.test.off && m.find(p, "breakers", app.test.breakerId);
+  $("top-banner").hidden = !off && !app.notSaved;
+  $("top-banner").replaceChildren(...(
+    off ? [h("strong", {}, `Breaker ${breakerName(off)} is OFF`), button("I've switched it back on", () => backOn(app))]
+    : app.notSaved ? ["Changes are not being saved on this device."]
+    : []));
   if (!p) {
     $("screen").replaceChildren(welcomeView(app));
     return;
@@ -210,8 +226,11 @@ async function boot() {
   if (app.project) {
     await app.store.pruneImages(app.project.floors.map((f) => f.imageId).filter(Boolean));
     app.tab = startTab(app.project);
+    app.test = await app.store.getSetting("test", null);
+    if (app.test && !m.find(app.project, "breakers", app.test.breakerId)) app.test = null;
   }
   render();
+  if (app.test && app.test.off) askBackOn(app);
 }
 
 boot();

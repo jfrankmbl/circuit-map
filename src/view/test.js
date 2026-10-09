@@ -225,8 +225,11 @@ function finish(app) {
   const t = app.test, breaker = m.find(app.project, "breakers", t.breakerId);
   t.review = false;
   t.done = true;
-  app.commit(`tested ${breakerTitle(breaker)}`, (p) => m.markSwept(p, breaker.id));
-  t.summary = finishSummary(app.project, t);
+  // The summary is worked out inside the change, because the change redraws the page, which shows it.
+  app.commit(`tested ${breakerTitle(breaker)}`, (p) => {
+    m.markSwept(p, breaker.id);
+    t.summary = finishSummary(p, t);
+  });
 }
 
 // ---- stage 3: still assigned here
@@ -252,11 +255,12 @@ function reviewPage(app, breaker, top) {
         button("Keep it", () => { t.kept.push(d.id); next(); }))))),
   ];
   return h("section", { class: "page" }, top,
-    h("p", {}, left.text),
+    // Nothing left (the app was closed part way through this step): just carry on.
+    h("p", {}, left.text || "Nothing else is left on this breaker to check."),
     h("p", { class: "small" }, "A wrong guess, or a circuit that has been changed, shows up here. Only floors you ticked as checked are counted."),
     group("Guess", left.guessed),
     group("Found by an earlier test", left.tested),
-    button("Keep all", () => { finish(app); redraw(app); }));
+    button(left.text ? "Keep all" : "Continue", () => { finish(app); redraw(app); }));
 }
 
 // ---- stage 4: the summary
