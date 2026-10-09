@@ -62,7 +62,9 @@ export function merge(local, incoming) {
   // changed: records whose content differs from this device's copy, with the names of the fields that differ.
   // removedItems: what the merge deleted from this device. Both are for the "Bring them in?" question.
   const summary = { added: 0, updated: 0, removed: 0, renumbered: fixLabelCollisions(out), changed: [], removedItems: [] };
-  const nameOf = (r) => r.label || r.name || r.code || r.id;
+  const labelOf = new Map([...local.devices, ...incoming.devices].map((d) => [d.id, d.label]));
+  const nameOf = (r) => r.switchId ? `${labelOf.get(r.switchId) || "A switch"} switches ${labelOf.get(r.loadId) || "a device"}`
+    : r.label || r.name || r.code || (r.slots ? "A breaker" : r.id);
   for (const coll of COLLECTIONS) {
     const mine = new Map(local[coll].map((r) => [r.id, r]));
     const kept = new Set();

@@ -146,3 +146,13 @@ test("a file from a different house is refused", () => {
   const other = m.createProject("Other", 1);
   assert.throws(() => merge(phone, other), (e) => e.code === "different-project");
 });
+
+test("a link is named by its two devices in the list of what was deleted", () => {
+  const { phone, main, kit, first } = pair();
+  const sw = m.placeDevice(phone, { floorId: main.id, roomId: kit.id, type: "S", x: 9, y: 9 }, 1200);
+  m.toggleLink(phone, { switchId: sw.id, loadId: first.id }, 1300);
+  const mac = structuredClone(phone);
+  m.remove(mac, "devices", first.id, 3000);
+  const { summary } = merge(phone, mac);
+  assert.deepEqual(summary.removedItems.map((r) => r.name).sort(), [first.label, `${sw.label} switches ${first.label}`].sort());
+});
