@@ -7,6 +7,7 @@ import { drawFloor } from "./markers.js";
 import { roomsSection, roomPage } from "./rooms.js";
 import { scaleSection } from "./scale.js";
 import { startLineUp } from "./lineup.js";
+import { exportSheet } from "./send.js";
 
 const FLOOR_NAMES = ["Basement", "Main floor", "Upstairs", "Attic"];
 
@@ -179,6 +180,8 @@ async function choosePicture(app, floor, file) {
 function deleteFloor(app, floor) {
   ask("Delete floor", deleteFloorQuestion(app.project, floor.id), [
     { text: "Cancel", cls: "main" },
+    // Once the copy is saved the question comes back.
+    { text: "Save a copy first", run: () => exportSheet(app, () => deleteFloor(app, floor)) },
     {
       text: `Delete ${floor.name}`, cls: "plain danger",
       run: () => {
