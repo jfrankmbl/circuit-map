@@ -332,7 +332,10 @@ async function boot() {
   const tab = inIphoneTab({ ua: navigator.userAgent, platform: navigator.platform, touchPoints: navigator.maxTouchPoints, standalone: !!navigator.standalone });
   if (app.project && tab && !(await app.store.getSetting("homeNote", false))) {
     app.store.setSetting("homeNote", true).catch(() => {});
-    ask("Before you add this to your Home Screen", HOME_NOTE, [{ text: "OK", cls: "main" }]);
+    ask("Before you add this to your Home Screen", HOME_NOTE, [
+      { text: "Send or back up now", cls: "main", run: () => sendSheet(app) },
+      { text: "OK" },
+    ]);
   }
 }
 

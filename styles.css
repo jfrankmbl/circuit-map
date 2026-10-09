@@ -213,6 +213,11 @@ button.numbering { display: flex; align-items: center; gap: 12px; text-align: le
 .card h3 { margin: 8px 0 0; font-size: 22px; }
 .card ul { margin: 0; padding-left: 24px; }
 .page h3 { margin: 8px 0 0; font-size: 18px; }
+/* A notice: set apart from the page by a panel, a border and an accent edge. */
+.home-card { padding: 12px 16px; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--radius); background: var(--panel); font-size: 18px; }
+.home-card > * { margin: 0; }
+.home-card > * + * { margin-top: 8px; }
+.home-card button.plain { padding-left: 0; }
 
 /* Five tabs on a phone: tighter, at the smallest text size allowed, so the words do not run into each other. */
 @media (max-width: 699px) { #tabs button { padding: 8px 2px; font-size: 16px; } }
@@ -279,7 +284,7 @@ body:has(.print-page) #mode-bar { display: none; } /* the Undo bar offers action
 #top-banner.calm span { flex: 1 1 240px; }
 #top-banner.calm button { border-color: var(--line-strong); }
 
-/* PDF page thumbnails */
-.pages { display: flex; flex-wrap: wrap; gap: 12px; max-height: 50vh; overflow: auto; }
-button.page-thumb { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; }
-button.page-thumb canvas { max-width: 140px; max-height: 140px; }
+/* PDF page thumbnails: a grid that fills the width (2 columns on a phone, more when wide); the sheet scrolls, not the grid. */
+.pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+button.page-thumb { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; min-height: 0; padding: 8px; }
+button.page-thumb canvas { max-width: 100%; height: auto; max-height: 220px; object-fit: contain; }

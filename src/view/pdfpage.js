@@ -2,7 +2,7 @@
 import { pdfScale } from "../picture.js";
 import { h, button, openSheet } from "../ui.js";
 
-const THUMB = 160; // pixels on the longest side of a page thumbnail
+const THUMB = 320; // pixels on the longest side of a page thumbnail (shown at about 150 to 220 CSS pixels)
 
 let reader; // pdf.js, loaded the first time a PDF is chosen
 async function pdfjs() {
@@ -44,7 +44,7 @@ export async function pickPdfPage(file, longSide) {
         const cell = h("button", { type: "button", class: "page-thumb", "aria-label": `Page ${n}`, onclick: () => {
           close();
           page(n).then(resolve, reject);
-        } }, h("span", {}, `Page ${n}`));
+        } }, h("span", {}, `Page ${n} of ${doc.numPages}`));
         grid.append(cell);
         draw(doc, n, THUMB).then((canvas) => cell.prepend(canvas)).catch(() => {});
       }

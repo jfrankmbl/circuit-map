@@ -12,3 +12,14 @@
 **Left for Plan 5:** the service worker (offline), "Works without a signal", the version line.
 
 **Checks done:** a 3-page PDF shows three thumbnails and page 2 comes back as a 2318 x 3000 image; the card shows with an iPhone user agent and Start here anyway hides it; manifest and icon are served; no console errors. Not checked on a real iPhone: Add to Home Screen itself and the one-time note.
+
+**After the UI review (issues 14 to 17)**
+
+- Rebased onto `plan-ui-look`; the one conflict was `#top-banner.calm button` in `styles.css` (kept `--line-strong`, kept the `.pages` rules).
+- 14: the page choice is a grid that fills the width (two columns on a phone), thumbnails drawn at 320 px, "Page N of M", and the sheet scrolls instead of a box inside it.
+- 15: the Home Screen card is a notice (`.home-card`: panel, border, accent edge, 18 px text); "Start here anyway" lines up with the text.
+- 16: the one-time Home Screen note offers "Send or back up now", which opens the send sheet, next to OK.
+
+Checked at 375x812, dark: a 4-page PDF in the page choice, the card with an iPhone user agent. The note's new button was read in code only. `node --test` 165 pass.
+
+Then write Plan 5.
