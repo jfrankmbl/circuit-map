@@ -77,6 +77,7 @@ label { display: block; font-weight: 600; font-size: 16px; }
 @media (min-width: 700px) { .wide-only { display: inline; } }
 
 .plan-screen { display: flex; flex-direction: column; height: 100%; }
+.plan-screen > .page { width: 100%; box-sizing: border-box; }
 .floor-switch { display: flex; gap: 8px; padding: 8px 16px; overflow-x: auto; }
 .plan { position: relative; flex: 1; min-height: 50vh; overflow: hidden; background: var(--panel); }
 .floor-page .plan { flex: none; height: 60vh; }
@@ -213,6 +214,9 @@ button.numbering { display: flex; align-items: center; gap: 12px; text-align: le
 /* The breaker test */
 button.step { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 64px; text-align: left; }
 button.step.main span { color: inherit; }
+/* A step with nothing to do is dimmed by colour, not opacity, so its words stay readable (4.5:1). */
+button.step:disabled { opacity: 1; color: var(--muted); }
+button.step:disabled span { color: var(--muted); }
 button.dead-toggle[aria-pressed="true"]::before { content: none; } /* it says "No power" in words instead of a tick */
 button.dead-toggle[aria-pressed="true"] { border-color: var(--danger); }
 .found { font-size: 22px; font-weight: 600; }

@@ -882,3 +882,12 @@ Round 58 (Pass B) must also find nothing for the stop rule.
 4. Contrast, dark mode, print: stated and consistent.
 
 Findings: none. Rounds 57 and 58 are a clean A+B pair and all 21 stories are walked, so the loop stops.
+
+## Round 59 - Pass B on plan-ui-look: Floors, Add (no picture), Switches, Breakers, Test steps, phone width, dark
+Seeded one house (1 floor, 1 room, 2 outlets, 1 panel, 1 breaker) and walked the screens `ui-look.md` listed as not yet seen.
+1. First launch, name screen, Setup, Add floor sheet, Floors list: consistent with the new look. No gap.
+2. Add tab with a floor that has no picture: the message and "Choose a picture" were shrink-wrapped and centred (`.page` has `margin: 0 auto` inside the flex-column `.plan-screen`), so they sat about 60 px in from the floor chip. Fixed: `.plan-screen > .page { width: 100%; box-sizing: border-box; }`; now left at 16 px like every other screen.
+3. Test steps: a step with nothing to do is a disabled button, so `button:disabled { opacity: .5 }` took its words to about 2.8:1. Fixed with colour instead of opacity (`button.step:disabled`); now 6.9:1.
+4. Breakers tab: the header block still fills the first screen (already listed as a candidate for the Web Awesome plan). Switches empty state: fine.
+
+Not yet walked: the Map tab with a picture, Print preview, toast, type picker, light mode. Round 60 should take those.
