@@ -24,3 +24,10 @@ export function toImage(view, sx, sy) {
 export function toScreen(view, ix, iy) {
   return [view.x + ix * view.k, view.y + iy * view.k];
 }
+
+// The view that shows the box [left, top, right, bottom] centred with `pad` screen pixels around it, zoomed in no
+// further than maxK.
+export function fitRect([left, top, right, bottom], boxW, boxH, pad = 32, maxK = 8) {
+  const k = Math.min((boxW - 2 * pad) / Math.max(right - left, 1), (boxH - 2 * pad) / Math.max(bottom - top, 1), maxK);
+  return { k, x: boxW / 2 - (k * (left + right)) / 2, y: boxH / 2 - (k * (top + bottom)) / 2 };
+}

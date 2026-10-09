@@ -38,3 +38,9 @@ export function removeCorner(outline, i) {
 export function moveCorner(outline, i, point) {
   return outline.map((p, n) => (n === i ? point : p));
 }
+
+// The smallest upright box around an outline: [left, top, right, bottom].
+export function roomBox(outline) {
+  const xs = outline.map((p) => p[0]), ys = outline.map((p) => p[1]);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+}

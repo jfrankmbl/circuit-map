@@ -1,8 +1,8 @@
 // The plan: a floor's picture that can be panned and zoomed, with layers above it for outlines and markers.
 // One finger or the mouse drags it; two fingers, the wheel or the buttons zoom; a touch that does not move is a tap.
 // Anything in a layer with a data-handle attribute can be dragged or tapped by itself (see plan.handles).
-import { h, svg, button } from "../ui.js";
-import { fit, zoomAt, panBy, toImage } from "../viewport.js";
+import { h, svg, button, openSheet } from "../ui.js";
+import { fit, fitRect, zoomAt, panBy, toImage, toScreen } from "../viewport.js";
 
 const TAP_SLOP = 6;    // a touch that moves further than this many pixels is a pan or a drag, not a tap
 const TOUCH_LIFT = 44; // a handle dragged by a finger sits this far above the fingertip, so it can be seen
@@ -36,7 +36,7 @@ export function createPlan() {
     handles: null,   // set by a mode: { move(id, { x, y }), drop(id, { x, y }), tap(id) } for [data-handle] elements
     size: null,      // { width, height } of the picture, or null with none
     view: { k: 1, x: 0, y: 0 },
-    show, fit: fitView, setMessage,
+    show, fit: fitView, setMessage, zoomTo, shows, setRooms,
   };
 
   let needsFit = false, token = 0, url = "";
@@ -66,6 +66,37 @@ export function createPlan() {
     plan.view = zoomAt(plan.view, sx ?? b.width / 2, sy ?? b.height / 2, factor, fitted / 2, Math.max(8, fitted * 8));
     apply();
   }
+
+  // Zoom so the picture box [left, top, right, bottom] fills the plan.
+  function zoomTo(rect) {
+    const b = box();
+    if (!plan.size || !b.width) return;
+    plan.view = fitRect(rect, b.width, b.height, 32, Math.max(8, fit(plan.size.width, plan.size.height, b.width, b.height).k * 8));
+    apply();
+  }
+
+  // Is picture point (x, y) on screen right now?
+  function shows(x, y) {
+    const b = box(), [sx, sy] = toScreen(plan.view, x, y);
+    return sx >= 0 && sy >= 0 && sx <= b.width && sy <= b.height;
+  }
+
+  // The rooms the Rooms button offers: [{ name, box }]. With none the button is hidden.
+  let rooms = [];
+  function setRooms(list) {
+    rooms = list;
+    roomsButton.hidden = !list.length;
+  }
+
+  // Pinching is hard one-handed: Rooms lists this floor's rooms, and tapping one zooms the plan to it.
+  const roomsButton = button("Rooms", () => openSheet("Zoom to a room", (close) => [
+    h("div", { class: "rows scroll" }, rooms.map((r) => button(r.name, () => {
+      close();
+      zoomTo(r.box);
+    }))),
+    button("Cancel", close),
+  ]));
+  roomsButton.hidden = true;
 
   // Show a picture blob, or nothing (null). Fits it to the box. A newer call wins over a slower older one.
   async function show(blob) {
@@ -186,7 +217,8 @@ export function createPlan() {
     h("div", { class: "zoom-buttons" },
       h("button", { type: "button", "aria-label": "Zoom in", onclick: () => zoom(1.5) }, "+"),
       h("button", { type: "button", "aria-label": "Zoom out", onclick: () => zoom(1 / 1.5) }, "−"),
-      button("Fit", fitView)));
+      button("Fit", fitView),
+      roomsButton));
 
   // The picture may be loaded before the plan is on screen and has a size; fit it once it has one.
   new ResizeObserver(() => {
