@@ -145,7 +145,7 @@ function detailsEl(app, d) {
 }
 
 // Jump to a device on the plan. If that changes floor or leaves the list, a Back button says where he came from.
-function showOnPlan(app, id) {
+export function showOnPlan(app, id) {
   const st = state(app), d = m.find(app.project, "devices", id), from = app.floor();
   if (!d) return;
   if (st.list || d.floorId !== from.id) {
