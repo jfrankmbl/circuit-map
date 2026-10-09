@@ -1,6 +1,7 @@
 // The device list as CSV text, for a spreadsheet or a printout.
 import { displayName } from "./catalog.js";
 import { find, breakerKey, sortedBreakers } from "./model.js";
+import { safeName, dayStamp } from "./file.js";
 
 function cell(value) {
   let s = value == null ? "" : String(value);
@@ -44,4 +45,13 @@ export function breakersCsv(project) {
     }
   }
   return rows.map((r) => r.map(cell).join(",")).join("\r\n") + "\r\n";
+}
+
+// The spreadsheet to download: which is "devices" or "breakers". { name, text }. The text starts with a byte-order
+// mark so Excel shows accents correctly.
+export function csvFile(project, which, date = new Date()) {
+  return {
+    name: `${safeName(project)} ${which} ${dayStamp(date)}.csv`,
+    text: "\uFEFF" + (which === "breakers" ? breakersCsv(project) : devicesCsv(project)),
+  };
 }

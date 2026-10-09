@@ -547,9 +547,9 @@ test("the file to download is named for the house and the day, and starts with a
   const day = new Date(2026, 9, 6, 14, 5);
   const devices = csvFile(p, "devices", day), breakers = csvFile(p, "breakers", day);
   assert.equal(devices.name, "Dad's house devices 2026-10-06.csv");
-  assert.ok(devices.text.startsWith("﻿label,floor,"));
+  assert.ok(devices.text.startsWith("\uFEFFlabel,floor,"));
   assert.equal(breakers.name, "Dad's house breakers 2026-10-06.csv");
-  assert.ok(breakers.text.startsWith("﻿panel,spaces,"));
+  assert.ok(breakers.text.startsWith("\uFEFFpanel,spaces,"));
 });
 ```
 
@@ -615,7 +615,7 @@ Append to the end of the file:
 export function csvFile(project, which, date = new Date()) {
   return {
     name: `${safeName(project)} ${which} ${dayStamp(date)}.csv`,
-    text: "﻿" + (which === "breakers" ? breakersCsv(project) : devicesCsv(project)),
+    text: "\uFEFF" + (which === "breakers" ? breakersCsv(project) : devicesCsv(project)),
   };
 }
 ```

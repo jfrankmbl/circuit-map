@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as m from "../src/model.js";
-import { devicesCsv, breakersCsv } from "../src/csv.js";
+import { devicesCsv, breakersCsv, csvFile } from "../src/csv.js";
 import { sample } from "./helpers.js";
 
 test("one row per device, sorted by label, with circuit and switching", () => {
@@ -53,4 +53,14 @@ test("labels sort by number, and text that looks like a formula is defused", () 
   assert.ok(lines[1].endsWith(",'=SUM(A1)"));
   assert.ok(lines[2].startsWith("KIT-02,"));
   assert.ok(lines[10].startsWith("KIT-10,"));
+});
+
+test("the file to download is named for the house and the day, and starts with a byte-order mark", () => {
+  const { p } = sample();
+  const day = new Date(2026, 9, 6, 14, 5);
+  const devices = csvFile(p, "devices", day), breakers = csvFile(p, "breakers", day);
+  assert.equal(devices.name, "Dad's house devices 2026-10-06.csv");
+  assert.ok(devices.text.startsWith("\uFEFFlabel,floor,"));
+  assert.equal(breakers.name, "Dad's house breakers 2026-10-06.csv");
+  assert.ok(breakers.text.startsWith("\uFEFFpanel,spaces,"));
 });

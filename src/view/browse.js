@@ -9,6 +9,8 @@ import { floorSwitch } from "./floorswitch.js";
 import { drawFloor, glyph } from "./markers.js";
 import { openMarkerSheet } from "./markersheet.js";
 import { showOnPanel } from "./panel.js";
+import { csvFile } from "../csv.js";
+import { saveFile } from "./savefile.js";
 
 const REACH = 22; // screen pixels: half of a 44-point target
 const FILTERS = [["", "All"], ["outlet", "Outlets"], ["switch", "Switches"], ["light", "Lights"], ["other", "Other"]];
@@ -99,7 +101,8 @@ export function browseView(app) {
       search,
       pick(st.list, false, "Plan", () => { st.list = false; app.render(); }),
       pick(st.list, true, "List", () => { st.list = true; app.render(); }),
-      button("Key", keySheet)),
+      button("Key", keySheet),
+      button("Download spreadsheet", () => spreadsheetSheet(app))),
     h("div", { class: "pick-row", role: "group", "aria-label": "Show" },
       FILTERS.map(([group, text]) => pick(st.group, group, text, () => { st.group = group; app.render(); }))),
     status,
@@ -222,4 +225,20 @@ export function deleteSelected(app) {
   st.selected = "";
   app.commit(`deleted ${d.label}`, (p) => m.remove(p, "devices", d.id));
   toast(`Deleted ${d.label}.`, { text: "Undo", run: () => app.undo() });
+}
+
+// Everything as a spreadsheet: one row for each device, or one for each breaker.
+function spreadsheetSheet(app) {
+  const p = app.project, breakers = p.breakers.filter((b) => b.kind !== "empty").length;
+  const get = (which) => {
+    const file = csvFile(p, which);
+    saveFile(file.name, file.text, "text/csv");
+  };
+  openSheet("Download spreadsheet", (close) => [
+    h("p", { class: "small" }, "A file that opens in Excel or Numbers."),
+    h("div", { class: "rows" },
+      button(`Devices (${p.devices.length}): every outlet, switch and light, with its breaker`, () => { close(); get("devices"); }),
+      button(`Breakers (${breakers}): what is on each one, and how sure`, () => { close(); get("breakers"); })),
+    button("Cancel", close),
+  ]);
 }

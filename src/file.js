@@ -3,11 +3,20 @@ import { FORMAT_VERSION, COLLECTIONS } from "./model.js";
 
 export const EXTENSION = ".circuitmap";
 
+const pad = (n) => String(n).padStart(2, "0");
+
+// The house name with the characters a file name cannot have taken out.
+export function safeName(project) {
+  return project.name.replace(/[\\/:*?"<>|]/g, "").trim() || "House";
+}
+
+// "2026-10-06"
+export function dayStamp(date) {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 export function fileName(project, date = new Date()) {
-  const p = (n) => String(n).padStart(2, "0");
-  const stamp = `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())} ${p(date.getHours())}${p(date.getMinutes())}`;
-  const safe = project.name.replace(/[\\/:*?"<>|]/g, "").trim() || "House";
-  return `${safe} ${stamp}${EXTENSION}`;
+  return `${safeName(project)} ${dayStamp(date)} ${pad(date.getHours())}${pad(date.getMinutes())}${EXTENSION}`;
 }
 
 export function serialize(project, images = {}) {
