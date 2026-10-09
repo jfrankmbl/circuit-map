@@ -14,8 +14,10 @@ import { panelView } from "./view/panel.js";
 import { breakerName } from "./panel.js";
 import { backOn, askBackOn } from "./view/test.js";
 import { browseView, deleteSelected } from "./view/browse.js";
-import { chipText, needsBackup } from "./sending.js";
-import { sendSheet, exportSheet } from "./view/send.js";
+import { chipText, needsBackup, unsent } from "./sending.js";
+import { exportSheet } from "./view/send.js";
+import { sendSheet } from "./view/movesheet.js";
+import { importFile } from "./view/bringin.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
 const TABS = [["floors", "Floors", setupView], ["add", "Add", placeView], ["link", "Switches", linkView], ["panel", "Breakers", panelView], ["map", "Map", browseView]];
@@ -130,8 +132,9 @@ export const app = {
       await app.store.putImage(id, await (await fetch(dataUrl)).blob());
     }
     Object.assign(app, { project, history: createHistory(), ui: {}, mode: null, test: null, floorId: "", shownImage: "", tab: startTab(project),
-      sentAt: images ? Date.now() : 0, nudge: false });
+      sentAt: images ? Date.now() : 0, nudge: false, cameIn: {}, importUndo: null });
     app.store.setSetting("sent", app.sentAt).catch(() => {});
+    app.store.setSetting("cameIn", {}).catch(() => {});
     app.saveTest();
     app.save();
     render();
@@ -142,10 +145,49 @@ export const app = {
   // True while "Back up your work" should show. Decided when the app opens.
   nudge: false,
 
+  // { id: updated }: records and deletions that arrived by Import exactly as they are, which are not this device's work
+  // to send (see sending.js unsent). Emptied by a send.
+  cameIn: {},
+  // Set by bringIn, for Undo import: { project, history, cameIn, after } as they were before it, and the project as it
+  // was just after. Lasts for the session.
+  importUndo: null,
+
   markSent(at) {
     app.sentAt = at;
+    app.cameIn = {};
     app.nudge = false;
     app.store.setSetting("sent", at).catch(() => {});
+    app.store.setSetting("cameIn", {}).catch(() => {});
+    render();
+  },
+
+  // Take in a merged project (from merge.js) and the pictures that came with the file ({ imageId: data URL }). The
+  // ordinary Undo history is emptied: stepping back through it afterwards would record the imported things as deleted.
+  async bringIn(merged, images, cameIn) {
+    if (app.mode) app.cancelMode();
+    const before = { project: structuredClone(app.project), history: app.history, cameIn: app.cameIn };
+    for (const floor of merged.floors) {
+      const url = images[floor.imageId];
+      if (url && !(await app.store.getImage(floor.imageId))) await app.store.putImage(floor.imageId, await (await fetch(url)).blob());
+    }
+    Object.assign(app.project, merged);
+    Object.assign(app, { history: createHistory(), ui: {}, cameIn: { ...app.cameIn, ...cameIn } });
+    app.importUndo = { ...before, after: JSON.stringify(app.project) };
+    if (app.test && !m.find(app.project, "breakers", app.test.breakerId)) app.test = null;
+    app.store.setSetting("cameIn", app.cameIn).catch(() => {});
+    app.saveTest();
+    app.save();
+    render();
+  },
+
+  // Put this device back exactly as it was before the last bringIn. Nothing is recorded as deleted.
+  undoImport() {
+    const { project, history, cameIn } = app.importUndo;
+    if (app.mode) app.cancelMode();
+    Object.assign(app.project, project);
+    Object.assign(app, { history, cameIn, ui: {}, importUndo: null });
+    app.store.setSetting("cameIn", cameIn).catch(() => {});
+    app.save();
     render();
   },
 
@@ -191,7 +233,7 @@ function render() {
     return;
   }
   $("house").textContent = p.name;
-  const chip = chipText(m.changesSince(p, app.sentAt));
+  const chip = chipText(unsent(p, app.sentAt, app.cameIn));
   $("chip").replaceChildren(h("span", { class: "wide-only" }, chip.wide), h("span", { class: "narrow-only" }, chip.narrow));
   const tab = TABS.find((t) => t[0] === app.tab) || TABS[0];
   $("tabs").replaceChildren(...TABS.map(([id, label]) =>
@@ -214,6 +256,14 @@ function render() {
 
 $("undo").addEventListener("click", () => app.undo());
 $("chip").addEventListener("click", () => sendSheet(app));
+
+// A file dropped on the window is brought in. (With no house yet the first-launch screen takes it.)
+document.addEventListener("dragover", (e) => e.preventDefault());
+document.addEventListener("drop", (e) => {
+  e.preventDefault();
+  const file = e.dataTransfer && e.dataTransfer.files[0];
+  if (file && app.project && !document.querySelector("dialog[open]")) importFile(app, file);
+});
 
 document.addEventListener("keydown", (e) => {
   if (document.querySelector("dialog[open]")) return; // a sheet handles its own keys
@@ -264,7 +314,8 @@ async function boot() {
     await app.store.pruneImages(app.project.floors.map((f) => f.imageId).filter(Boolean));
     app.tab = startTab(app.project);
     app.sentAt = await app.store.getSetting("sent", 0);
-    app.nudge = needsBackup(app.project, app.sentAt, await app.store.getSetting("later", 0));
+    app.cameIn = await app.store.getSetting("cameIn", {});
+    app.nudge = needsBackup(app.project, app.sentAt, await app.store.getSetting("later", 0), Date.now(), app.cameIn);
     app.test = await app.store.getSetting("test", null);
     if (app.test && !m.find(app.project, "breakers", app.test.breakerId)) app.test = null;
   }

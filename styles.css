@@ -103,7 +103,8 @@ dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.45); }
 [data-handle] { cursor: grab; }
 
 dialog.sheet form > * + * { margin-top: 12px; }
-dialog.sheet ul { margin: 0; padding-left: 24px; }
+dialog.sheet ul, dialog.sheet ol, .steps ol { margin: 0; padding-left: 24px; }
+.steps h3 { margin: 12px 0 4px; font-size: 18px; }
 
 /* The bar under the plan: the mode text takes a full line, its buttons follow, and Undo keeps to the right. */
 #mode-bar { flex-wrap: wrap; }

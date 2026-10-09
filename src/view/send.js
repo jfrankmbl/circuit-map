@@ -1,6 +1,6 @@
-// Send or back up: the whole house, pictures included, as one project file. Also the sheet behind the header chip.
+// Send or back up: the whole house, pictures included, as one project file.
 import { fileName, serialize } from "../file.js";
-import { sendStatus, sizeText } from "../sending.js";
+import { sizeText } from "../sending.js";
 import { h, button, openSheet } from "../ui.js";
 import { saveFile, willShare } from "./savefile.js";
 
@@ -46,18 +46,4 @@ export function exportSheet(app, after) {
   }).catch(() => {
     status.textContent = "The file could not be made. Try again.";
   });
-}
-
-// "Move or back up": what the chip in the header opens.
-export function sendSheet(app) {
-  openSheet("Move or back up", (close) => [
-    h("p", {}, sendStatus(app.project, app.sentAt)),
-    h("p", { class: "small" }, "Send a copy to your Mac, or save it to iCloud Drive. A copy that never leaves this device does not protect against a lost or wiped phone."),
-    h("div", { class: "buttons" },
-      button("Send or back up", () => {
-        close();
-        exportSheet(app);
-      }, "main"),
-      button("Close", close)),
-  ]);
 }
