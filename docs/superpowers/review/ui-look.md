@@ -9,7 +9,8 @@ Contrast, measured in the browser pane:
 | Muted text on panel | 5.51 | 6.90 | 4.5 |
 | Main button text | 6.23 | 8.35 | 4.5 |
 | Danger on page | 6.54 | 10.59 | 4.5 |
-| Field border (`--line-strong`) | 3.36 | 4.03 | 3 |
+| Field border (`--line-strong`) on page | 3.72 | 4.03 | 3 |
+| Field border (`--line-strong`) on panel | 3.27 | 3.46 | 3 |
 | Accent bar | 6.23 | 8.12 | 3 |
 
 Checked: Map tab in dark phone width and light 1000 px, the send sheet (with its slide-in), the Breakers tab. No console errors; `node --test` 161 pass.

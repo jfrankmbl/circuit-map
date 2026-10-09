@@ -352,7 +352,7 @@ it)." On the Mac "or drop the file here" is added.
   of the session, each named on the button ("Undo: placed KIT-03"). A deleted device is undone, not confirmed:
   "Deleted KIT-03. Undo" appears for a few seconds. Deleting a room, floor, panel or breaker still asks first (see
   Errors and Setup). Undo restores records with a new time, so a merge on the other device cannot delete them again.
-- **Touch size.** Every button and field is at least 44 by 44 points with a gap between neighbours; body text is 18 px and nothing is below 16 px (smaller text in a field makes Safari zoom the page). A marker is drawn small but taps with a 44 point
+- **Touch size.** Every button and field is at least 44 by 44 points with a gap between neighbours; body text is 18 px and nothing is below 16 px (smaller text in a field makes Safari zoom the page). One exception: the count inside a marker on the plan (12 px bold on a solid shape) is drawn, not read as text, and sits at 12 px so it fits the shape; the label next to it is 16 px. A marker is drawn small but taps with a 44 point
   reach. If a tap reaches more than one marker, a short list of them (label and type) pops up to choose from, rather
   than guessing. Markers have a light and a dark outline so they show on any picture, light or dark. While a marker or
   room corner is dragged on the phone it is drawn above the fingertip so it can be seen.
