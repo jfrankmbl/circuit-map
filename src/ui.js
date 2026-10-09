@@ -17,6 +17,10 @@ export const h = (tag, attrs = {}, ...kids) => fill(document.createElement(tag),
 export const svg = (tag, attrs = {}, ...kids) => fill(document.createElementNS("http://www.w3.org/2000/svg", tag), attrs, kids);
 export const button = (text, onclick, cls = "") => h("button", { type: "button", class: cls, onclick }, text);
 
+// A part of the page that opens and closes (Web Awesome's wa-details). Without the library loaded it is an unknown
+// element and its children simply show, so nothing is lost.
+export const details = (summary, opts = {}, ...kids) => h("wa-details", { summary, open: !!opts.open, class: opts.cls || "" }, ...kids);
+
 // A sheet from the bottom of the screen (a centred box on a wide window). build(close) returns its content.
 // Esc and the returned function both close it.
 export function openSheet(title, build, cls = "") {

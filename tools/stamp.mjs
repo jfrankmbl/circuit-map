@@ -6,7 +6,7 @@ import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(fileURLToPath(import.meta.url), "..", "..");
-const SKIP = /(^|\/)(LICENSE|README\.txt)$/;
+const SKIP = /(^|\/)(LICENSE(\.md)?|README\.txt)$/;
 
 function walk(dir) {
   return readdirSync(dir).flatMap((name) => {

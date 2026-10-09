@@ -6,7 +6,7 @@ import { plural } from "../flow.js";
 import { listByRoom } from "../browse.js";
 import { spaceName, breakerName, breakerTitle, KIND_WORDS, panelCells, enteredText, nextOpenSpace, pairChoices, findBreakers,
   breakerSummary, feedChoices, powerOutCard, whereChoices } from "../panel.js";
-import { h, button, nameField, openSheet, ask, toast } from "../ui.js";
+import { h, button, details, nameField, openSheet, ask, toast } from "../ui.js";
 import { showOnPlan } from "./browse.js";
 import { openMarkerSheet } from "./markersheet.js";
 import { progressText, nextToTest } from "../testing.js";
@@ -99,13 +99,14 @@ function picturePage(app, panel) {
       : [
         p.panels.length > 1 && h("div", { class: "pick-row", role: "group", "aria-label": "Panel" }, p.panels.map((x) =>
           h("button", { type: "button", "aria-pressed": String(x.id === panel.id), onclick: () => show(app, { panelId: x.id }) }, x.name))),
-        h("div", { class: "panel-head" },
-          h("strong", {}, `${panel.name}: ${enteredText(p, panel)}`),
-          !app.mode && h("div", { class: "buttons" },
-            button("Panel settings", () => show(app, { page: "settings" })),
-            button("Add panel", () => addPanelSheet(app)))),
+        h("div", { class: "panel-head" }, h("strong", {}, `${panel.name}: ${enteredText(p, panel)}`)),
         !app.mode && testLine(app),
-        !app.mode && printLine(app, panel),
+        // Closed, so the breakers start on the first screen instead of below five rows of buttons.
+        !app.mode && details("Panel settings and printing", {},
+          h("div", { class: "buttons" },
+            button("Panel settings", () => show(app, { page: "settings" })),
+            button("Add panel", () => addPanelSheet(app))),
+          printLine(app, panel)),
         !app.mode && [search, results],
         pictureEl(app, panel),
       ]);

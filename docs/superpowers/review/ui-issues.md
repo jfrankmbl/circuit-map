@@ -6,11 +6,12 @@ Format: `- [ ] #N screen: what is wrong. Seen: how to reproduce. Plan impact: no
 
 ## Open
 
-- [ ] #1 Breakers tab: the header block (Something has no power, panel line, Panel settings, Add panel, tested count, Test the next one, Print) fills the first phone screen before any breaker shows. Plan impact: Web Awesome plan.
-- [ ] #8 Marker sheet: "More" is a bare bold word with no chevron, border or fill, so it does not look tappable. Seen: Map, List, tap a row, Edit. Plan impact: Web Awesome look plan (a details component would give it a marker).
 
 ## Fixed
 
+- #1 Breakers tab: Panel settings, Add panel and Print sit in one closed "Panel settings and printing" control; the first breakers show on the first phone screen. (plan-7-webawesome)
+- #8 Marker sheet: "More" is a `wa-details` with a chevron and a border. (plan-7-webawesome)
+- #15 (notice style) the Home Screen card is a `wa-callout`. (plan-7-webawesome)
 - #14 PDF page choice is a grid with "Page N of M" and larger thumbnails. (plan-4d-pdf-home, 5258f53)
 - #15 Home Screen card styled as a notice. (plan-4d-pdf-home, 5258f53)
 - #16 Home Screen note has "Send or back up now". (plan-4d-pdf-home, 5258f53)

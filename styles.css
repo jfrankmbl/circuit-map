@@ -15,6 +15,20 @@
   }
 }
 
+/* Web Awesome reads its own tokens; point them at ours so it follows the same colours, both schemes and the radius.
+   Ours are not in a layer, so they win over its theme. Only wa-details and wa-callout are used (src/wa.js). */
+:root {
+  --wa-color-surface-default: var(--bg); --wa-color-surface-raised: var(--panel); --wa-color-surface-lowered: var(--panel);
+  --wa-color-surface-border: var(--line-strong); --wa-color-text-normal: var(--fg); --wa-color-text-quiet: var(--muted);
+  --wa-color-focus: var(--accent); --wa-border-radius-m: var(--radius); --wa-border-radius-l: var(--radius);
+  --wa-color-brand-fill-quiet: var(--panel); --wa-color-brand-border-quiet: var(--line); --wa-color-brand-on-quiet: var(--fg);
+  --wa-color-brand-fill-normal: var(--panel); --wa-color-brand-border-normal: var(--accent); --wa-color-brand-on-normal: var(--fg);
+  --wa-font-family-body: inherit; --wa-font-size-m: 1em;
+  color-scheme: light dark; color: var(--fg);
+}
+wa-details { margin: 8px 0; font-size: 18px; }
+wa-details::part(summary) { min-height: 44px; font-weight: 600; }
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; }
@@ -213,8 +227,8 @@ button.numbering { display: flex; align-items: center; gap: 12px; text-align: le
 .card h3 { margin: 8px 0 0; font-size: 22px; }
 .card ul { margin: 0; padding-left: 24px; }
 .page h3 { margin: 8px 0 0; font-size: 18px; }
-/* A notice: set apart from the page by a panel, a border and an accent edge. */
-.home-card { padding: 12px 16px; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--radius); background: var(--panel); font-size: 18px; }
+/* A notice: a Web Awesome callout, set apart from the page by a panel, a border and an accent edge. */
+.home-card { margin: 0; font-size: 18px; border-left: 4px solid var(--accent); }
 .home-card > * { margin: 0; }
 .home-card > * + * { margin-top: 8px; }
 .home-card button.plain { padding-left: 0; }

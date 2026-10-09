@@ -23,6 +23,9 @@ import { importFile } from "./view/bringin.js";
 import { startOffline } from "./view/offline.js";
 import { updateBanner, UPDATE_TEXT, UPDATE_HOW } from "./offline.js";
 
+// Web Awesome (details, callout). Loaded on the side: if it fails the app still works.
+import("./wa.js").catch(() => {});
+
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
 const TABS = [["floors", "Floors", setupView], ["add", "Add", placeView], ["link", "Switches", linkView], ["panel", "Breakers", panelView], ["map", "Map", browseView]];
 

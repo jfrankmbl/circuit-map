@@ -11,6 +11,8 @@ Try it here: `node tools/serve.mjs`, then open http://localhost:8765 (Node 22 or
 
 Tests: `node --test`.
 
+Web Awesome (details and callout only) is vendored in `vendor/webawesome/`. To update it: `npm pack @awesome.me/webawesome`, unpack the tarball, run `node tools/vendor-webawesome.mjs <that package folder>`, then `node tools/stamp.mjs`.
+
 Publishing: run `node tools/stamp.mjs --bump` (new version number and date, and the list of files the offline cache saves), run the tests, commit and push. GitHub Pages serves the repository root of `main` (Settings, Pages); a push goes live in about a minute. After adding a file, run `node tools/stamp.mjs` so it is cached; the tests fail until you do.
 
 Offline: the service worker only registers away from localhost. To try it here, open http://localhost:8765/?sw=1.

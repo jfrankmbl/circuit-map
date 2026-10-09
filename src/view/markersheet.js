@@ -6,7 +6,7 @@ import { nextLabel } from "../ids.js";
 import { displayName, typeInfo, isSwitch } from "../catalog.js";
 import { markersNear, roomChoices } from "../placing.js";
 import { plural, typeChangeWarning, togglesWarning, heightText } from "../flow.js";
-import { h, button, openSheet, ask, toast } from "../ui.js";
+import { h, button, details, openSheet, ask, toast } from "../ui.js";
 import { drawFloor } from "./markers.js";
 import { openPalette } from "./palette.js";
 import { circuitText } from "../browse.js";
@@ -74,8 +74,7 @@ export function openMarkerSheet(app, id, opts = {}) {
       isSwitch(d.type) && h("div", { class: "buttons", role: "group", "aria-label": "Switches on this plate" },
         h("strong", {}, "Switches on this plate"),
         [1, 2, 3, 4].map((n) => h("button", { type: "button", "aria-pressed": String(d.toggles === n), onclick: () => n !== d.toggles && setSwitches(n) }, String(n)))),
-      h("details", { open: !!opts.more },
-        h("summary", {}, "More"),
+      details("More", { open: !!opts.more },
         h("label", {}, `Height above the floor, in inches (now: ${heightText(d.heightIn)})`, height),
         h("div", { class: "buttons" }, [12, 18, 48].map((n) => button(String(n), () => setHeight(n))), button("Ceiling", () => setHeight(null))),
         (group === "outlet" || group === "light") && row("Behind a GFCI outlet", gfci ? gfci.label : "None", () => { close(); chooseGfci(app, id); }),
