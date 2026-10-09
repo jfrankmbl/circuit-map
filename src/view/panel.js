@@ -9,6 +9,8 @@ import { spaceName, breakerName, breakerTitle, KIND_WORDS, panelCells, enteredTe
 import { h, button, nameField, openSheet, ask, toast } from "../ui.js";
 import { showOnPlan } from "./browse.js";
 import { openMarkerSheet } from "./markersheet.js";
+import { progressText, nextToTest } from "../testing.js";
+import { testPage, startTest } from "./test.js";
 
 const KINDS = [["standard", "Standard"], ["GFCI", "GFCI (has a Test button)"], ["AFCI", "AFCI"], ["dual", "Both GFCI and AFCI"]];
 const NUMBERINGS = [
@@ -17,12 +19,12 @@ const NUMBERINGS = [
 ];
 
 // What the tab remembers. lastAmps and lastKind start the next breaker entered, so an ordinary one is only a label.
-const state = (app) => (app.ui.panel ||= {
+export const state = (app) => (app.ui.panel ||= {
   panelId: "", page: "", breakerId: "", card: null, cardMore: false, cardBack: false, highlight: "",
   lastAmps: 15, lastKind: "standard", lastRoomId: "",
 });
 
-const show = (app, changes) => {
+export const show = (app, changes) => {
   Object.assign(state(app), changes);
   app.render();
 };
@@ -33,6 +35,7 @@ export function panelView(app) {
   st.panelId = panel ? panel.id : "";
   if (!app.mode) {
     const breaker = m.find(p, "breakers", st.breakerId);
+    if (st.page === "test" && app.test && m.find(p, "breakers", app.test.breakerId)) return testPage(app);
     if (st.page === "card" && st.card) return cardPage(app);
     if (st.page === "breaker" && breaker) return breakerPage(app, breaker);
     if (st.page === "settings" && panel) return settingsPage(app, panel);
@@ -98,6 +101,7 @@ function picturePage(app, panel) {
           !app.mode && h("div", { class: "buttons" },
             button("Panel settings", () => show(app, { page: "settings" })),
             button("Add panel", () => addPanelSheet(app)))),
+        !app.mode && testLine(app),
         !app.mode && [search, results],
         pictureEl(app, panel),
       ]);
@@ -269,6 +273,12 @@ function breakerPage(app, breaker) {
       h("div", { class: "scroll" }, groups(sum.downstream, close)),
       button("Done", close, "main"),
     ])),
+    // Switching off a breaker that feeds a subpanel would put out everything on it: test the subpanel's own breakers.
+    sum.feeds.length
+      ? button("Test the subpanel's own breakers", () => show(app, { panelId: sum.feeds[0].id, page: "" }), "main big")
+      : app.test && app.test.off && app.test.breakerId !== breaker.id
+        ? h("p", {}, "Another breaker is still off. Switch it back on before testing this one.")
+        : button("Test this breaker", () => (app.test && app.test.breakerId === breaker.id ? show(app, { page: "test" }) : startTest(app, breaker)), "main big"),
     button("Edit", () => openEntry(app, panel, breaker.slots[0], breaker)));
 }
 
@@ -441,7 +451,8 @@ function cardPage(app) {
     ],
     card.also.map((a) => h("div", { class: "buttons" }, h("span", {}, a.text), onPanel(a.breakerId))),
     card.unknown && h("p", {}, card.unknown),
-    card.none && [h("p", {}, card.none), button("Try another room", () => whereSheet(app))]);
+    card.none && [h("p", {}, card.none), button("Try another room", () => whereSheet(app))],
+    (card.unknown || card.none) && testNext(app, "Test your breakers"));
 }
 
 // ---- used from other tabs
@@ -500,4 +511,17 @@ export function askWhichPanel(app, deviceId) {
       button("New panel", () => { close(); addPanelSheet(app, link); })),
     button("Decide later", close),
   ]);
+}
+
+// A button that starts the test of the next untested breaker; nothing when none is left or one is still off.
+function testNext(app, text) {
+  const next = nextToTest(app.project);
+  if (!next || (app.test && app.test.off)) return null;
+  return button(text, () => startTest(app, next));
+}
+
+// "Breakers tested: 5 of 18", with a way to carry on.
+function testLine(app) {
+  if (!app.project.breakers.some((b) => b.kind !== "empty")) return null;
+  return h("div", { class: "buttons" }, h("span", {}, progressText(app.project)), testNext(app, "Test the next one"));
 }

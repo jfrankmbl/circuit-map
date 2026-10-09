@@ -195,3 +195,12 @@ button.numbering { display: flex; align-items: center; gap: 12px; text-align: le
 
 /* Five tabs on a phone: tighter, at the smallest text size allowed, so the words do not run into each other. */
 @media (max-width: 699px) { #tabs button { padding: 8px 2px; font-size: 16px; } }
+
+/* The breaker test */
+button.step { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 64px; text-align: left; }
+button.step.main span { color: inherit; }
+button.dead-toggle[aria-pressed="true"]::before { content: none; } /* it says "No power" in words instead of a tick */
+button.dead-toggle[aria-pressed="true"] { border-color: var(--danger); }
+.found { font-size: 22px; font-weight: 600; }
+#top-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+#top-banner button { background: var(--bg); color: var(--fg); border-color: var(--bg); min-height: 52px; font-size: 18px; }
