@@ -204,3 +204,43 @@ button.dead-toggle[aria-pressed="true"] { border-color: var(--danger); }
 .found { font-size: 22px; font-weight: 600; }
 #top-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 #top-banner button { background: var(--bg); color: var(--fg); border-color: var(--bg); min-height: 52px; font-size: 18px; }
+
+/* Print. The paper on the screen is the printout: black on white whatever the theme, borders and words instead of
+   shading or colour, sizes in points and inches, and no type below 10 pt. */
+.print-line { align-items: center; }
+.paper-fit { margin: 0 16px 16px; }
+.paper { box-sizing: content-box; width: 7.25in; margin: 0 auto; padding: 0.25in; color-scheme: light; background: #fff; color: #000; font: 10pt/1.25 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.sheet-page + .sheet-page { margin-top: 0.25in; padding-top: 0.25in; border-top: 1px dashed #000; }
+.paper-head { display: flex; flex-wrap: wrap; gap: 2pt 12pt; margin-bottom: 6pt; font-weight: 400; text-align: left; }
+.paper-head strong { flex: 1 1 100%; font-size: 13pt; }
+.door-card { width: 5in; padding: 0.1in; border: 1px solid #000; }
+.door-card.wide { width: 100%; }
+.door-cols { display: flex; gap: 6pt; }
+.door-col { flex: 1; display: flex; flex-direction: column; gap: 2pt; min-width: 0; }
+.door-cell { border: 1px solid #000; }
+.door-cell.double { border-width: 2.5pt; }
+.door-cell.empty { border-style: dashed; }
+.door-line { display: flex; gap: 4pt; min-height: 27pt; padding: 1pt 4pt; } /* 40 spaces fit one page */
+.door-cell.double .door-line { min-height: 56pt; }
+.door-line + .door-line { border-top: 1px solid #000; }
+.door-no { flex: none; min-width: 1.6em; font-size: 11pt; white-space: nowrap; }
+.door-text { flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 0 6pt; min-width: 0; overflow-wrap: anywhere; }
+.door-label { flex: 1; font-weight: 600; }
+.door-facts { flex: none; }
+.door-rooms { flex: 1 1 100%; }
+.door-line.write .door-text { margin-bottom: 5pt; border-bottom: 1px solid #000; }
+.full-list { width: 100%; border-collapse: collapse; text-align: left; }
+.full-list th, .full-list td { padding: 2pt 8pt 2pt 0; vertical-align: top; }
+.full-list .full-breaker th { padding-top: 8pt; border-bottom: 1px solid #000; font-size: 11pt; }
+.full-list tr { break-inside: avoid; }
+@page { margin: 0.5in; }
+@media print {
+  :root { color-scheme: light; --bg: #fff; --fg: #000; }
+  html, body { height: auto; }
+  body { display: block; }
+  #header, #top-banner, #tabs, #mode-bar, #toast, .no-print { display: none !important; }
+  #screen { overflow: visible; }
+  .paper-fit { margin: 0; }
+  .paper { margin: 0; padding: 0; zoom: 1 !important; }
+  .sheet-page + .sheet-page { margin: 0; padding: 0; border: 0; break-before: page; }
+}

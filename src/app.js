@@ -132,6 +132,10 @@ export const app = {
     render();
   },
 
+  // { panelId: { at, lines } }: what each panel's door card said when it was last printed from this device (see
+  // printing.js). Not in the project file.
+  printed: {},
+
   // The breaker test in progress (see testing.js), or null. Kept on this device, not in the project file, so the
   // "breaker is OFF" bar survives closing the app.
   test: null,
@@ -222,6 +226,7 @@ async function boot() {
     app.store = memoryStore();
     app.notSaved = true;
   }
+  app.printed = await app.store.getSetting("printed", {});
   app.project = await app.store.loadProject();
   if (app.project) {
     await app.store.pruneImages(app.project.floors.map((f) => f.imageId).filter(Boolean));

@@ -11,6 +11,8 @@ import { showOnPlan } from "./browse.js";
 import { openMarkerSheet } from "./markersheet.js";
 import { progressText, nextToTest } from "../testing.js";
 import { testPage, startTest } from "./test.js";
+import { printedStatus } from "../printing.js";
+import { printPage } from "./print.js";
 
 const KINDS = [["standard", "Standard"], ["GFCI", "GFCI (has a Test button)"], ["AFCI", "AFCI"], ["dual", "Both GFCI and AFCI"]];
 const NUMBERINGS = [
@@ -21,7 +23,7 @@ const NUMBERINGS = [
 // What the tab remembers. lastAmps and lastKind start the next breaker entered, so an ordinary one is only a label.
 export const state = (app) => (app.ui.panel ||= {
   panelId: "", page: "", breakerId: "", card: null, cardMore: false, cardBack: false, highlight: "",
-  lastAmps: 15, lastKind: "standard", lastRoomId: "",
+  lastAmps: 15, lastKind: "standard", lastRoomId: "", printFull: false,
 });
 
 export const show = (app, changes) => {
@@ -39,6 +41,7 @@ export function panelView(app) {
     if (st.page === "card" && st.card) return cardPage(app);
     if (st.page === "breaker" && breaker) return breakerPage(app, breaker);
     if (st.page === "settings" && panel) return settingsPage(app, panel);
+    if (st.page === "print" && panel) return printPage(app, panel);
   }
   return picturePage(app, panel);
 }
@@ -102,6 +105,7 @@ function picturePage(app, panel) {
             button("Panel settings", () => show(app, { page: "settings" })),
             button("Add panel", () => addPanelSheet(app)))),
         !app.mode && testLine(app),
+        !app.mode && printLine(app, panel),
         !app.mode && [search, results],
         pictureEl(app, panel),
       ]);
@@ -524,4 +528,13 @@ function testNext(app, text) {
 function testLine(app) {
   if (!app.project.breakers.some((b) => b.kind !== "empty")) return null;
   return h("div", { class: "buttons" }, h("span", {}, progressText(app.project)), testNext(app, "Test the next one"));
+}
+
+// "Print or save as PDF", with when this panel's card was last printed and whether it has gone stale since.
+function printLine(app, panel) {
+  const status = printedStatus(app.project, panel, app.printed[panel.id]);
+  return h("div", { class: "buttons print-line" },
+    button("Print or save as PDF", () => show(app, { page: "print" })),
+    status.last && h("span", {}, status.last),
+    status.changed && h("strong", {}, status.changed));
 }

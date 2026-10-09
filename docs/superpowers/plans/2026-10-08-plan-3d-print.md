@@ -292,7 +292,7 @@ const PAPER = 744; // CSS pixels: 7.25 in of page with a quarter inch of white e
 function fit() {
   for (const paper of document.querySelectorAll(".paper")) paper.style.zoom = Math.min(1, paper.parentElement.clientWidth / PAPER);
 }
-window.addEventListener("resize", fit);
+let listening = false; // for a window that changes size; set up when the page is first drawn
 
 export function printPage(app, panel) {
   const st = state(app), p = app.project, card = doorCard(p, panel);
@@ -303,7 +303,8 @@ export function printPage(app, panel) {
     card.fedFrom && h("span", {}, card.fedFrom),
     h("span", {}, card.printed),
     h("span", {}, card.legend));
-  const lineEl = (line) => h("div", { class: "door-line" },
+  // A line with nothing entered is ruled, to write on by hand.
+  const lineEl = (line) => h("div", { class: "door-line" + (line.label || line.facts ? "" : " write") },
     h("strong", { class: "door-no" }, line.number),
     h("span", { class: "door-text" },
       h("span", { class: "door-label" }, line.label),
@@ -330,7 +331,9 @@ export function printPage(app, panel) {
     app.store.setSetting("printed", app.printed).catch(() => {});
     window.print();
   };
-  requestAnimationFrame(fit);
+  if (!listening) window.addEventListener("resize", fit);
+  listening = true;
+  queueMicrotask(fit); // once the page is on the screen
   return h("section", { class: "print-page" },
     h("div", { class: "page no-print" },
       button(`Back to ${panel.name}`, () => show(app, { page: "" })),
@@ -454,18 +457,18 @@ with:
    shading or colour, sizes in points and inches, and no type below 10 pt. */
 .print-line { align-items: center; }
 .paper-fit { margin: 0 16px 16px; }
-.paper { box-sizing: content-box; width: 7.25in; padding: 0.25in; color-scheme: light; background: #fff; color: #000; font: 10pt/1.25 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.paper { box-sizing: content-box; width: 7.25in; margin: 0 auto; padding: 0.25in; color-scheme: light; background: #fff; color: #000; font: 10pt/1.25 system-ui, -apple-system, "Segoe UI", sans-serif; }
 .sheet-page + .sheet-page { margin-top: 0.25in; padding-top: 0.25in; border-top: 1px dashed #000; }
 .paper-head { display: flex; flex-wrap: wrap; gap: 2pt 12pt; margin-bottom: 6pt; font-weight: 400; text-align: left; }
 .paper-head strong { flex: 1 1 100%; font-size: 13pt; }
 .door-card { width: 5in; padding: 0.1in; border: 1px solid #000; }
 .door-card.wide { width: 100%; }
 .door-cols { display: flex; gap: 6pt; }
-.door-col { flex: 1; display: flex; flex-direction: column; gap: 3pt; min-width: 0; }
+.door-col { flex: 1; display: flex; flex-direction: column; gap: 2pt; min-width: 0; }
 .door-cell { border: 1px solid #000; }
 .door-cell.double { border-width: 2.5pt; }
 .door-cell.empty { border-style: dashed; }
-.door-line { display: flex; gap: 4pt; min-height: 28pt; padding: 2pt 4pt; }
+.door-line { display: flex; gap: 4pt; min-height: 27pt; padding: 1pt 4pt; } /* 40 spaces fit one page */
 .door-cell.double .door-line { min-height: 56pt; }
 .door-line + .door-line { border-top: 1px solid #000; }
 .door-no { flex: none; min-width: 1.6em; font-size: 11pt; white-space: nowrap; }
@@ -473,7 +476,7 @@ with:
 .door-label { flex: 1; font-weight: 600; }
 .door-facts { flex: none; }
 .door-rooms { flex: 1 1 100%; }
-.door-cell.todo .door-text { margin-bottom: 5pt; border-bottom: 1px solid #000; } /* a line to write on */
+.door-line.write .door-text { margin-bottom: 5pt; border-bottom: 1px solid #000; }
 .full-list { width: 100%; border-collapse: collapse; text-align: left; }
 .full-list th, .full-list td { padding: 2pt 8pt 2pt 0; vertical-align: top; }
 .full-list .full-breaker th { padding-top: 8pt; border-bottom: 1px solid #000; font-size: 11pt; }
@@ -486,7 +489,7 @@ with:
   #header, #top-banner, #tabs, #mode-bar, #toast, .no-print { display: none !important; }
   #screen { overflow: visible; }
   .paper-fit { margin: 0; }
-  .paper { padding: 0; zoom: 1 !important; }
+  .paper { margin: 0; padding: 0; zoom: 1 !important; }
   .sheet-page + .sheet-page { margin: 0; padding: 0; border: 0; break-before: page; }
 }
 ```
