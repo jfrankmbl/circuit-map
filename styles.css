@@ -282,6 +282,7 @@ body:has(.print-page) #mode-bar { display: none; } /* the Undo bar offers action
 @media (min-width: 700px) { .narrow-only { display: none; } }
 #top-banner.calm { background: var(--panel); color: var(--fg); border-bottom: 1px solid var(--line); font-weight: 400; }
 #top-banner.calm span { flex: 1 1 240px; }
+#top-banner.calm .how { display: block; margin-top: 4px; }
 #top-banner.calm button { border-color: var(--line-strong); }
 
 /* PDF page thumbnails: a grid that fills the width (2 columns on a phone, more when wide); the sheet scrolls, not the grid. */

@@ -5,6 +5,8 @@ import { h, button, openSheet } from "../ui.js";
 import { exportSheet } from "./send.js";
 import { chooseFile, undoImport } from "./bringin.js";
 import { platesContent } from "./plates.js";
+import { offlineText, versionText } from "../offline.js";
+import { VERSION, RELEASED } from "../version.js";
 
 // Both directions in numbered steps. Also shown on the first-launch screen.
 export function movingCard() {
@@ -29,6 +31,8 @@ export function sendSheet(app) {
       }),
       app.importUndo && button("Undo import", () => { close(); undoImport(app); }),
       button("Close", close)),
+    offlineText(app.offline) && h("p", { class: "small" }, offlineText(app.offline)),
+    h("p", { class: "small" }, versionText(VERSION, RELEASED)),
     h("h3", {}, "Plates to rewrite"),
     ...(m.platesToRewrite(app.project).length ? platesContent(app, close, () => sendSheet(app)) : [h("p", { class: "small" }, "No plates to rewrite")]),
   ]);

@@ -20,6 +20,8 @@ import { sendSheet } from "./view/movesheet.js";
 import { platesSheet } from "./view/plates.js";
 import { inIphoneTab, HOME_NOTE } from "./homescreen.js";
 import { importFile } from "./view/bringin.js";
+import { startOffline } from "./view/offline.js";
+import { updateBanner, UPDATE_TEXT, UPDATE_HOW } from "./offline.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
 const TABS = [["floors", "Floors", setupView], ["add", "Add", placeView], ["link", "Switches", linkView], ["panel", "Breakers", panelView], ["map", "Map", browseView]];
@@ -35,6 +37,10 @@ export const app = {
   tab: "",
   floorId: "",        // the floor being shown; see floor()
   notSaved: false,    // true when the device refuses to store the project
+  offline: "unsupported", // "unsupported" | "pending" | "ready": whether the files are saved for use without a signal
+  updateWaiting: false,   // a new version has installed and waits for the app to be closed
+  controlled: false,      // an older version was already in control when the new one arrived
+  updateLater: false,     // Later was tapped on the new-version banner (not saved)
   history: createHistory(),
   plan: createPlan(), // one plan for every tab, so zoom and position survive a redraw
   shownImage: "",     // the imageId the plan is showing
@@ -225,8 +231,10 @@ function render() {
   const off = p && app.test && app.test.off && m.find(p, "breakers", app.test.breakerId);
   const plates = p && !off && !app.notSaved && app.tab === "map" && !app.platesLater ? m.platesToRewrite(p).length : 0;
   const nudge = !!p && !off && !app.notSaved && !plates && app.nudge;
-  $("top-banner").hidden = !off && !app.notSaved && !plates && !nudge;
-  $("top-banner").classList.toggle("calm", !!plates || nudge);
+  const update = !!p && !off && !app.notSaved && !plates && !nudge
+    && updateBanner({ waiting: app.updateWaiting, controlled: app.controlled, later: app.updateLater });
+  $("top-banner").hidden = !off && !app.notSaved && !plates && !nudge && !update;
+  $("top-banner").classList.toggle("calm", !!plates || nudge || update);
   $("top-banner").replaceChildren(...(
     off ? [h("strong", {}, `Breaker ${breakerName(off)} is OFF`), button("I've switched it back on", () => backOn(app))]
     : app.notSaved ? ["Changes are not being saved on this device."]
@@ -234,6 +242,8 @@ function render() {
       button("Remind me later", () => { app.platesLater = true; render(); })]
     : nudge ? [h("span", {}, "Back up your work: send a copy to your Mac, or save it to iCloud Drive."),
       button("Send or back up", () => exportSheet(app)), button("Later", app.later)]
+    : update ? [h("span", {}, UPDATE_TEXT, h("span", { class: "small how" }, UPDATE_HOW)),
+      button("Later", () => { app.updateLater = true; render(); })]
     : []));
   if (!p) {
     $("screen").replaceChildren(welcomeView(app));
@@ -339,4 +349,5 @@ async function boot() {
   }
 }
 
+startOffline(app, render);
 boot();
