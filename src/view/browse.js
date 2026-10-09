@@ -3,7 +3,7 @@ import * as m from "../model.js";
 import { displayName, isSwitch } from "../catalog.js";
 import { markersNear } from "../placing.js";
 import { plural, heightText } from "../flow.js";
-import { searchDevices, listByRoom, circuitText, switchLines, switchedBy, titleText, plateRow } from "../browse.js";
+import { searchDevices, listByRoom, circuitText, switchLines, switchedBy, titleText } from "../browse.js";
 import { h, button, openSheet, ask, toast } from "../ui.js";
 import { floorSwitch } from "./floorswitch.js";
 import { drawFloor, glyph } from "./markers.js";
@@ -16,8 +16,8 @@ const REACH = 22; // screen pixels: half of a 44-point target
 const FILTERS = [["", "All"], ["outlet", "Outlets"], ["switch", "Switches"], ["light", "Lights"], ["other", "Other"]];
 
 // What the tab remembers: the search, the group filter, list or plan, the device whose details show, where a jump
-// came from (for the Back button), and whether the plates bar was put off.
-const state = (app) => (app.ui.map ||= { query: "", group: "", list: false, selected: "", back: null, platesLater: false });
+// came from (for the Back button), and a second device to ring (see showOnPlan).
+const state = (app) => (app.ui.map ||= { query: "", group: "", list: false, selected: "", also: "", back: null });
 
 function select(app, id) {
   const st = state(app);
@@ -48,7 +48,7 @@ export function browseView(app) {
     }
     const here = devices.filter((d) => d.floorId === floor.id);
     app.showPicture(floor);
-    drawFloor(app, floor, { only: searching ? new Set(here.map((d) => d.id)) : null, picked: st.selected });
+    drawFloor(app, floor, { only: searching ? new Set(here.map((d) => d.id)) : null, picked: st.selected, also: st.selected ? st.also : "" });
     app.plan.onTap = ({ x, y }) => {
       const near = markersNear(here, x, y, REACH / app.plan.view.k);
       if (near.length < 2) return select(app, near.length ? near[0].id : "");
@@ -96,7 +96,6 @@ export function browseView(app) {
       Object.assign(st, { list: back.list, query: back.query, group: back.group, selected: "", back: null });
       app.setFloor(back.floorId);
     })),
-    platesBar(app),
     h("div", { class: "pick-row" },
       search,
       pick(st.list, false, "Plan", () => { st.list = false; app.render(); }),
@@ -149,56 +148,17 @@ function detailsEl(app, d) {
 }
 
 // Jump to a device on the plan. If that changes floor or leaves the list, a Back button says where he came from.
-export function showOnPlan(app, id) {
+export function showOnPlan(app, id, also = "") {
   const st = state(app), d = m.find(app.project, "devices", id), from = app.floor();
   if (!d) return;
   if (st.list || d.floorId !== from.id) {
     st.back = { list: st.list, query: st.query, group: st.group, floorId: from.id, text: st.list ? "Back to the list" : `Back to ${from.name}` };
   }
   // The search is cleared so the marker is sure to be drawn.
-  Object.assign(st, { list: false, query: "", group: "", selected: id });
+  Object.assign(st, { list: false, query: "", group: "", selected: id, also });
   Object.assign(app, { tab: "map", floorId: d.floorId });
   app.render();
   if (!app.plan.shows(d.x, d.y)) app.plan.fit();
-}
-
-// "2 plates to rewrite": labels that changed while the old one is still written on the cover plate.
-function platesBar(app) {
-  const st = state(app), count = m.platesToRewrite(app.project).length;
-  if (!count || st.platesLater) return null;
-  return h("div", { class: "bar" },
-    h("strong", {}, `${plural(count, "plate")} to rewrite`),
-    button("Show", () => platesSheet(app)),
-    button("Remind me later", () => { st.platesLater = true; app.render(); }));
-}
-
-function platesSheet(app) {
-  const plates = m.platesToRewrite(app.project);
-  if (!plates.length) return;
-  openSheet("Plates to rewrite", (close) => [
-    h("ul", { class: "rows scroll" }, plates.map((d) => {
-      const row = plateRow(app.project, d);
-      return h("li", {},
-        h("strong", {}, row.todo),
-        h("span", {}, row.what),
-        h("span", { class: "small" }, row.why),
-        h("div", { class: "buttons" },
-          button("Show on plan", () => { close(); showOnPlan(app, d.id); }),
-          button("I've rewritten it", () => {
-            close();
-            app.commit(`rewrote the plate of ${d.label}`, (p) => m.confirmPlate(p, d.id));
-            platesSheet(app);
-          })));
-    })),
-    plates.length > 1 && button(`I've rewritten all ${plates.length}`, () => {
-      close();
-      ask(`Mark all ${plates.length} as done?`, "", [
-        { text: "Yes, all rewritten", cls: "main", run: () => app.commit(`rewrote ${plural(plates.length, "plate")}`, (p) => { for (const d of plates) m.confirmPlate(p, d.id); }) },
-        { text: "Cancel", run: () => platesSheet(app) },
-      ]);
-    }),
-    button("Done", close, "main"),
-  ]);
 }
 
 // Every marker shape and mark, with its meaning in words.

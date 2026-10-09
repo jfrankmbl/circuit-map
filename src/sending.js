@@ -6,7 +6,9 @@ import { plural, dayText, agoText } from "./flow.js";
 const DAY = 86400000;
 
 // The chip in the header. On a phone there is only room for the narrow one.
-export function chipText(count) {
+// plates is how many cover plates need rewriting; it is said only while changes are waiting too.
+export function chipText(count, plates = 0) {
+  if (count && plates) return { wide: `${count} not sent, ${plural(plates, "plate")}`, narrow: `Send ${count} ✎${plates}` };
   return count ? { wide: `${plural(count, "change")} not sent`, narrow: `Send ${count}` } : { wide: "Nothing new to send", narrow: "Send" };
 }
 

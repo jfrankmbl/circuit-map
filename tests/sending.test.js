@@ -84,3 +84,9 @@ test("the Moving your project steps are there for both directions", () => {
   assert.equal(MOVING.macToPhone.length, 2);
   assert.match(MOVING.tip, /^Tip: finish on one device/);
 });
+
+test("the chip adds the plates to rewrite while changes are waiting", () => {
+  assert.deepEqual(chipText(12, 2), { wide: "12 not sent, 2 plates", narrow: "Send 12 ✎2" });
+  assert.equal(chipText(1, 1).wide, "1 not sent, 1 plate");
+  assert.deepEqual(chipText(0, 2), chipText(0));
+});

@@ -31,13 +31,14 @@ export function glyph(type) {
 // ringed: a Set of ids to ring and tick.
 // only: a Set of ids; devices not in it are left out (a search or filter).
 // picked: the id of the device whose details are showing (it wears a ring and its label).
+// also: a second device ringed and labelled the same way (the other one that uses a label).
 // dim: a Set of ids drawn faint with a dashed outline (things that cannot be used in the current mode).
-export function drawMarkers(app, floor, { pulse = "", moving = null, ringed = null, only = null, picked = "", dim = null } = {}) {
+export function drawMarkers(app, floor, { pulse = "", moving = null, ringed = null, only = null, picked = "", also = "", dim = null } = {}) {
   const devices = floor ? app.project.devices.filter((d) => d.floorId === floor.id && (!only || only.has(d.id))) : [];
   app.plan.layers.markers.replaceChildren(...devices.map((d) => {
     const room = m.find(app.project, "rooms", d.roomId);
     const held = moving && moving.id === d.id;
-    const ring = d.id === pulse || d.id === picked || (ringed && ringed.has(d.id));
+    const ring = d.id === pulse || d.id === picked || d.id === also || (ringed && ringed.has(d.id));
     const at = held ? moving : d;
     return fixedAt(at.x, at.y, {
       class: "marker" + (d.id === pulse ? " pulse" : "") + (held ? " moving" : "") + (dim && dim.has(d.id) ? " dim" : ""),
@@ -51,7 +52,7 @@ export function drawMarkers(app, floor, { pulse = "", moving = null, ringed = nu
       d.notWorking && svg("text", { class: "marker-badge", x: 9, y: -7 }, "!"),
       d.plateLabel && svg("text", { class: "marker-badge", x: -22, y: -7 }, "✎"),
       ringed && ringed.has(d.id) && svg("text", { class: "marker-badge", x: 9, y: 18 }, "✓"),
-      (d.id === pulse || d.id === picked) && svg("text", { class: "marker-label", y: 32 }, d.label));
+      (d.id === pulse || d.id === picked || d.id === also) && svg("text", { class: "marker-label", y: 32 }, d.label));
   }));
 }
 

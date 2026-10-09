@@ -1,8 +1,10 @@
 // "Move or back up": what the chip in the header opens. Send, bring in a file, and the steps for moving a project.
+import * as m from "../model.js";
 import { sendStatus, MOVING } from "../sending.js";
 import { h, button, openSheet } from "../ui.js";
 import { exportSheet } from "./send.js";
 import { chooseFile, undoImport } from "./bringin.js";
+import { platesContent } from "./plates.js";
 
 // Both directions in numbered steps. Also shown on the first-launch screen.
 export function movingCard() {
@@ -27,5 +29,7 @@ export function sendSheet(app) {
       }),
       app.importUndo && button("Undo import", () => { close(); undoImport(app); }),
       button("Close", close)),
+    h("h3", {}, "Plates to rewrite"),
+    ...(m.platesToRewrite(app.project).length ? platesContent(app, close, () => sendSheet(app)) : [h("p", { class: "small" }, "No plates to rewrite")]),
   ]);
 }

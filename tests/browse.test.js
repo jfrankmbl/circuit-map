@@ -79,3 +79,16 @@ test("a device whose plate is out of date says so, and its row says what to writ
   assert.equal(titleText(flood), "KIT-04 (plate says EXT-01)");
   assert.deepEqual(plateRow(p, flood), { todo: "Write KIT-04 on this plate", what: "Flood light, Kitchen, Main", why: "It says EXT-01." });
 });
+
+test("a plate row offers Swap labels when another device already uses the old label", () => {
+  const { p, kit, flood } = house();
+  m.setRoom(p, flood.id, kit.id, true, 2000);
+  const clash = m.placeDevice(p, { floorId: flood.floorId, roomId: m.find(p, "rooms", m.find(p, "devices", flood.id).roomId).id, type: "D", x: 3, y: 3 }, 2100);
+  m.update(p, "devices", clash.id, { label: "EXT-01" }, 2200);
+  const row = plateRow(p, m.find(p, "devices", flood.id));
+  assert.equal(row.otherId, clash.id);
+  assert.equal(row.why, "It says EXT-01, and another duplex outlet in Kitchen already uses EXT-01.");
+  assert.equal(row.swap, "This one keeps EXT-01; the other duplex outlet becomes KIT-04");
+  m.swapLabels(p, flood.id, clash.id, 2300);
+  assert.deepEqual([m.find(p, "devices", flood.id).label, m.find(p, "devices", clash.id).plateLabel], ["EXT-01", "EXT-01"]);
+});

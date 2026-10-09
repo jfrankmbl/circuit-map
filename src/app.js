@@ -3,7 +3,7 @@
 import * as m from "./model.js";
 import { openStore, memoryStore } from "./store.js";
 import { createHistory, remember, forget, undo, undoLabel } from "./history.js";
-import { startTab } from "./flow.js";
+import { startTab, plural } from "./flow.js";
 import { h, button, toast, clearToast } from "./ui.js";
 import { createPlan } from "./view/plan.js";
 import { welcomeView } from "./view/welcome.js";
@@ -17,6 +17,7 @@ import { browseView, deleteSelected } from "./view/browse.js";
 import { chipText, needsBackup, unsent } from "./sending.js";
 import { exportSheet } from "./view/send.js";
 import { sendSheet } from "./view/movesheet.js";
+import { platesSheet } from "./view/plates.js";
 import { importFile } from "./view/bringin.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
@@ -144,6 +145,8 @@ export const app = {
   sentAt: 0,
   // True while "Back up your work" should show. Decided when the app opens.
   nudge: false,
+  // Remind me later on the plates bar: hidden until the app is next opened. Not saved.
+  platesLater: false,
 
   // { id: updated }: records and deletions that arrived by Import exactly as they are, which are not this device's work
   // to send (see sending.js unsent). Emptied by a send.
@@ -219,12 +222,15 @@ function render() {
   // One banner at the top at a time, the most pressing first: a breaker that is off (safety), then not saving, then
   // the nudge to back up.
   const off = p && app.test && app.test.off && m.find(p, "breakers", app.test.breakerId);
-  const nudge = !!p && !off && !app.notSaved && app.nudge;
-  $("top-banner").hidden = !off && !app.notSaved && !nudge;
-  $("top-banner").classList.toggle("calm", nudge);
+  const plates = p && !off && !app.notSaved && app.tab === "map" && !app.platesLater ? m.platesToRewrite(p).length : 0;
+  const nudge = !!p && !off && !app.notSaved && !plates && app.nudge;
+  $("top-banner").hidden = !off && !app.notSaved && !plates && !nudge;
+  $("top-banner").classList.toggle("calm", !!plates || nudge);
   $("top-banner").replaceChildren(...(
     off ? [h("strong", {}, `Breaker ${breakerName(off)} is OFF`), button("I've switched it back on", () => backOn(app))]
     : app.notSaved ? ["Changes are not being saved on this device."]
+    : plates ? [h("strong", {}, `${plural(plates, "plate")} to rewrite`), button("Show", () => platesSheet(app)),
+      button("Remind me later", () => { app.platesLater = true; render(); })]
     : nudge ? [h("span", {}, "Back up your work: send a copy to your Mac, or save it to iCloud Drive."),
       button("Send or back up", () => exportSheet(app)), button("Later", app.later)]
     : []));
@@ -233,7 +239,7 @@ function render() {
     return;
   }
   $("house").textContent = p.name;
-  const chip = chipText(unsent(p, app.sentAt, app.cameIn));
+  const chip = chipText(unsent(p, app.sentAt, app.cameIn), m.platesToRewrite(p).length);
   $("chip").replaceChildren(h("span", { class: "wide-only" }, chip.wide), h("span", { class: "narrow-only" }, chip.narrow));
   const tab = TABS.find((t) => t[0] === app.tab) || TABS[0];
   $("tabs").replaceChildren(...TABS.map(([id, label]) =>

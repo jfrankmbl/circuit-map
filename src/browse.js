@@ -79,10 +79,23 @@ export function titleText(device) {
 }
 
 // A row of the "Plates to rewrite" list: what to do first, then which device, then why.
+// When another device already uses the label this plate says, the row also has otherId and swap: trading labels leaves
+// this plate right and moves the rewriting to the other one.
 export function plateRow(project, device) {
-  return {
+  const old = device.plateLabel;
+  const other = project.devices.find((d) => d.id !== device.id && d.label === old);
+  const row = {
     todo: `Write ${device.label} on this plate`,
     what: `${displayName(device)}, ${roomName(project, device)}, ${floorName(project, device)}`,
-    why: `It says ${device.plateLabel}.`,
+    why: `It says ${old}.`,
   };
+  if (other) {
+    const kind = displayName(other).toLowerCase();
+    Object.assign(row, {
+      why: `It says ${old}, and another ${kind} in ${roomName(project, other)} already uses ${old}.`,
+      otherId: other.id,
+      swap: `This one keeps ${old}; the other ${kind} becomes ${device.label}`,
+    });
+  }
+  return row;
 }
