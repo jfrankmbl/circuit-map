@@ -44,3 +44,14 @@
 `node --test` passes (including the drift test), the checks pass, and the commits are on `plan-5-offline`.
 
 Then the Web Awesome look plan (see `2026-10-09-plan-ui-look.md` and `docs/superpowers/review/ui-issues.md`, Batch C), or deployment to GitHub Pages if Josh asks for it first.
+
+## Built
+
+Tasks 1 to 7 are on `plan-5-offline` (`60bbd63`); `node --test` 172 pass, including the drift test and a fake-scope test of install, activate and fetch.
+
+- A request that is not in the cache falls back to the network instead of failing; the app makes no such request, so this only matters if a file was left out, and the drift test guards that.
+- `node tools/stamp.mjs` has to be run after adding a file (the tests say so); `--bump` is for shipping.
+
+**Checked in the browser pane:** the header sheet shows "Works without a signal" and "Circuit Map version 1, 9 Oct 2026"; the new-version banner appears last in the order, hides on Later, and does not show on a first install; "Not saved for offline use yet" shows while pending.
+
+**Not checked:** the worker itself. The Browser pane refuses to register any service worker (even a one-line script fails with "An unknown error occurred when fetching the script"), so install, the one-time toast, offline reload and the version swap were only tested against a fake scope in `tests/sw.test.js`. Do these in real Chrome or Safari at `http://localhost:8765/?sw=1`, with the dev server stopped for the offline reload.
