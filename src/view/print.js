@@ -6,9 +6,11 @@ import { state, show } from "./panel.js";
 
 const PAPER = 744; // CSS pixels: 7.25 in of page with a quarter inch of white each side
 
-// On a phone the paper is shrunk to the width of the screen (pinch to read it). It is never enlarged.
+// On a phone the paper is shrunk to the width of the screen. "Read it larger" shows it at full size, scrolling sideways.
+// It is never enlarged beyond that.
+let large = false;
 function fit() {
-  for (const paper of document.querySelectorAll(".paper")) paper.style.zoom = Math.min(1, paper.parentElement.clientWidth / PAPER);
+  for (const paper of document.querySelectorAll(".paper")) paper.style.zoom = large ? 1 : Math.min(1, paper.parentElement.clientWidth / PAPER);
 }
 let listening = false; // for a window that changes size; set up when the page is first drawn
 
@@ -61,6 +63,7 @@ export function printPage(app, panel) {
         ? "The card, then a list of every device on each breaker."
         : "A card for the inside of the panel door. Cut along the outer line."),
       button("Print", print, "main big"),
+      h("button", { type: "button", "aria-pressed": String(large), onclick: () => { large = !large; show(app, {}); } }, "Read it larger"),
       h("p", { class: "small" }, "To save a PDF instead, choose Save as PDF in the print window (on iPhone: Save to Files).")),
     h("div", { class: "paper-fit" }, h("div", { class: "paper" },
       h("section", { class: "sheet-page" }, cardEl()),

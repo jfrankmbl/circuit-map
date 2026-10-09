@@ -20,7 +20,7 @@ export const button = (text, onclick, cls = "") => h("button", { type: "button",
 // A sheet from the bottom of the screen (a centred box on a wide window). build(close) returns its content.
 // Esc and the returned function both close it.
 export function openSheet(title, build, cls = "") {
-  const dialog = h("dialog", { class: "sheet " + cls });
+  const dialog = h("dialog", { class: "sheet " + cls, tabindex: "-1" });
   // Removed here as well as on the close event (which is what Esc fires): the event can come late or not at all.
   const close = () => {
     dialog.close();
@@ -30,6 +30,9 @@ export function openSheet(title, build, cls = "") {
   dialog.append(h("h2", {}, title), ...[build(close)].flat(Infinity).filter(Boolean));
   document.body.append(dialog);
   dialog.showModal();
+  // The sheet itself takes focus (without a ring), so a tap that opened it does not leave a ring on the first button
+  // or on a scrolling list. A sheet that wants a field focused does it afterwards.
+  dialog.focus();
   return close;
 }
 
@@ -51,8 +54,8 @@ export function clearToast() {
   document.getElementById("toast").replaceChildren();
 }
 
-// A short message above the tab bar. With an action ({ text, run }, usually Undo) it stays for 30 seconds, or until
-// the next change; without one, 4 seconds.
+// A short message above the tab bar. With an action ({ text, run }, usually Undo) it stays for 8 seconds, or until
+// the next change; without one, 4 seconds. It sits at the top so it never covers the details card or the Undo bar.
 export function toast(text, action) {
   clearToast();
   document.getElementById("toast").append(h("div", { class: "toast" },
@@ -61,7 +64,7 @@ export function toast(text, action) {
       clearToast();
       action.run();
     })));
-  toastTimer = setTimeout(clearToast, action ? 30000 : 4000);
+  toastTimer = setTimeout(clearToast, action ? 8000 : 4000);
 }
 
 // A text field that saves when he leaves it or taps the keyboard's Done. An empty name is put back as it was.

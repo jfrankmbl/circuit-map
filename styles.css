@@ -1,6 +1,6 @@
 :root {
   color-scheme: light dark;
-  --bg: #fff; --fg: #14171f; --muted: #596073; --line: #d3d8e2; --line-strong: #858ca0; --panel: #eef0f5;
+  --bg: #fff; --fg: #14171f; --muted: #596073; --line: #d3d8e2; --line-strong: #7d849a; --panel: #eef0f5;
   --accent: #2f55d4; --accent-fg: #fff; --danger: #b3261e;
   --radius: 12px; --radius-sm: 8px;
   --shadow-1: 0 1px 2px rgba(20, 23, 31, 0.08), 0 1px 3px rgba(20, 23, 31, 0.1);
@@ -83,10 +83,12 @@ label { display: block; font-weight: 600; font-size: 16px; }
 .floor-page .plan { flex: none; height: 60vh; }
 .plan-svg { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; }
 .plan-message { position: absolute; top: 40%; left: 16px; right: 16px; margin: 0; text-align: center; pointer-events: none; }
-.zoom-buttons { position: absolute; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
-.zoom-buttons button { background: var(--bg); }
+.zoom-buttons { position: absolute; right: 12px; top: 12px; display: flex; gap: 8px; }
+.zoom-buttons button { padding: 8px 6px; background: var(--bg); }
+.zoom-buttons button:last-child { padding-inline: 12px; }
 
-dialog.sheet { width: 100%; max-width: 640px; max-height: 90vh; margin: auto auto 0; padding: 20px 16px 16px; border: 0; border-radius: 20px 20px 0 0; background: var(--bg); color: var(--fg); box-shadow: var(--shadow-2); }
+dialog.sheet { width: 100%; max-width: 640px; max-height: 90vh; margin: auto auto 0; padding: 20px 16px calc(16px + env(safe-area-inset-bottom)); border: 0; border-radius: 20px 20px 0 0; background: var(--bg); color: var(--fg); box-shadow: var(--shadow-2); }
+dialog.sheet:focus { outline: none; }
 dialog.sheet[open] { animation: sheet-in 0.2s ease-out; }
 @keyframes sheet-in { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { dialog.sheet[open] { animation: none; } }
@@ -97,7 +99,7 @@ dialog.sheet::backdrop { background: rgba(10, 12, 18, 0.5); backdrop-filter: blu
 @media (min-width: 700px) { dialog.sheet { margin: auto; border-radius: 20px; } }
 .preview { display: block; max-width: 100%; max-height: 45vh; margin: 0 auto; border: 1px solid var(--line); border-radius: var(--radius-sm); }
 
-#toast { position: fixed; left: 0; right: 0; bottom: 124px; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
+#toast { position: fixed; left: 0; right: 0; top: calc(72px + env(safe-area-inset-top)); z-index: 5; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
 .toast { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; min-height: 60px; border-radius: 14px; background: var(--fg); color: var(--bg); box-shadow: var(--shadow-2); pointer-events: auto; }
 .toast button { background: var(--bg); color: var(--fg); }
 
@@ -147,6 +149,8 @@ dialog.sheet ul, dialog.sheet ol, .steps ol { margin: 0; padding-left: 24px; }
 /* The Add tab and its sheets */
 .pick-row { display: flex; align-items: center; gap: 8px; padding: 4px 16px; overflow-x: auto; }
 .pick-row button { flex: none; }
+.pick-row, .floor-switch { scrollbar-width: none; }
+.pick-row::-webkit-scrollbar, .floor-switch::-webkit-scrollbar { display: none; }
 button.recent, button.type-button { display: flex; align-items: center; gap: 8px; text-align: left; }
 button.type-button { width: 100%; }
 .type-button > span { display: flex; flex-direction: column; }
@@ -160,24 +164,26 @@ details > summary { display: flex; align-items: center; min-height: 44px; font-w
 details > * + * { margin-top: 12px; }
 
 /* The Map tab */
-input[type="search"] { flex: 1; min-width: 9em; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg); }
+input[type="search"] { flex: 1 1 100%; min-width: 9em; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg); }
 input:focus-visible { border-color: var(--accent); }
-.map-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.details { flex: none; max-height: 45vh; overflow: auto; padding: 12px 16px; border-top: 1px solid var(--line); }
+/* The screen never scrolls as a whole: the floor chips and filters stay put, the plan keeps what is left, and a device's
+   details sit over the foot of the plan (or under the list) and scroll inside their own capped height. */
+.plan-screen .plan { min-height: 0; }
+.map-body { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.details { flex: none; max-height: 40%; overflow: auto; padding: 12px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+.map-body.on-plan .details { position: absolute; left: 0; right: 0; bottom: 0; max-height: 45%; box-shadow: var(--shadow-2); }
 .details > * { margin: 0; }
 .details > * + * { margin-top: 8px; }
 .details h2 { font-size: 24px; }
 .details ul { padding-left: 24px; }
-.list { flex: 1; overflow: auto; padding: 0 16px 16px; }
+.list { flex: 1 1 0; min-height: 140px; overflow: auto; padding: 0 16px 16px; }
 .list h3 { margin: 16px 0 8px; font-size: 18px; }
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
 .rows li.key-row { flex-direction: row; align-items: center; gap: 12px; }
 .key-mark { flex: none; width: 28px; text-align: center; font-size: 20px; color: var(--danger); }
-/* Four zoom buttons in a column cover too much of a phone-sized plan: two by two there. */
-@media (max-width: 699px) { .zoom-buttons { display: grid; grid-template-columns: auto auto; } }
 @media (min-width: 700px) {
   .map-body { flex-direction: row; }
-  .details { width: 340px; max-height: none; border-top: 0; border-left: 1px solid var(--line); }
+  .details, .map-body.on-plan .details { position: static; width: 340px; max-height: none; border-top: 0; border-left: 1px solid var(--line); box-shadow: none; }
 }
 
 /* The Switches tab */
@@ -226,6 +232,8 @@ button.dead-toggle[aria-pressed="true"] { border-color: var(--danger); }
 /* Print. The paper on the screen is the printout: black on white whatever the theme, borders and words instead of
    shading or colour, sizes in points and inches, and no type below 10 pt. */
 .print-line { align-items: center; }
+body:has(.print-page) #mode-bar { display: none; } /* the Undo bar offers actions from other screens */
+.paper-fit { overflow-x: auto; }
 .paper-fit { margin: 0 16px 16px; }
 .paper { box-sizing: content-box; width: 7.25in; margin: 0 auto; padding: 0.25in; color-scheme: light; background: #fff; color: #000; font: 10pt/1.25 system-ui, -apple-system, "Segoe UI", sans-serif; }
 .sheet-page + .sheet-page { margin-top: 0.25in; padding-top: 0.25in; border-top: 1px dashed #000; }

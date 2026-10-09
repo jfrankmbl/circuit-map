@@ -39,7 +39,7 @@ export function browseView(app) {
   if (!m.find(p, "devices", st.selected)) st.selected = "";
 
   const status = h("p", { class: "plan-hint", role: "status" });
-  const body = h("div", { class: "map-body" });
+  const body = h("div", { class: "map-body" + (st.list ? "" : " on-plan") });
 
   // The plan, drawing only what the search found.
   const planEl = (devices, searching) => {
@@ -75,8 +75,6 @@ export function browseView(app) {
     const selected = m.find(p, "devices", st.selected);
     const details = selected ? detailsEl(app, selected) : null;
     body.replaceChildren(st.list ? listEl(app, devices) : planEl(devices, searching), ...(details ? [details] : []));
-    // On a phone the details sit under the plan; bring them into view once the screen has been drawn.
-    if (details) queueMicrotask(() => details.scrollIntoView({ block: "nearest" }));
   };
 
   const search = h("input", {
@@ -96,8 +94,8 @@ export function browseView(app) {
       Object.assign(st, { list: back.list, query: back.query, group: back.group, selected: "", back: null });
       app.setFloor(back.floorId);
     })),
+    h("div", { class: "pick-row" }, search),
     h("div", { class: "pick-row" },
-      search,
       pick(st.list, false, "Plan", () => { st.list = false; app.render(); }),
       pick(st.list, true, "List", () => { st.list = true; app.render(); }),
       button("Key", keySheet),
@@ -130,6 +128,11 @@ function detailsEl(app, d) {
   return h("aside", { class: "details", "aria-label": "Details" },
     h("h2", {}, titleText(d)),
     h("p", {}, `${displayName(d)}, ${room ? room.name : "no room"}, ${floor.name}`),
+    // The buttons come first so a short card on a phone never hides them.
+    h("div", { class: "buttons" },
+      button("Edit", () => openMarkerSheet(app, d.id), "main"),
+      (st.list || d.floorId !== app.floor().id) && button("Show on plan", () => showOnPlan(app, d.id)),
+      button("Close", () => select(app, ""))),
     d.notWorking && h("p", { class: "error" }, "Not working"),
     line("Breaker", circuitText(p, d), d.breakerId && [" ", button("Show on panel", () => showOnPanel(app, d.breakerId))]),
     line("Height", heightText(d.heightIn)),
@@ -140,11 +143,7 @@ function detailsEl(app, d) {
     switches.length > 0 && [
       h("p", {}, h("strong", {}, "Switched by")),
       h("ul", {}, switches.map((s) => h("li", {}, s.text, " ", show(s.id, s.label)))),
-    ],
-    h("div", { class: "buttons" },
-      button("Edit", () => openMarkerSheet(app, d.id), "main"),
-      (st.list || d.floorId !== app.floor().id) && button("Show on plan", () => showOnPlan(app, d.id)),
-      button("Close", () => select(app, ""))));
+    ]);
 }
 
 // Jump to a device on the plan. If that changes floor or leaves the list, a Back button says where he came from.
