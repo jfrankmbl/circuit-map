@@ -17,7 +17,7 @@ let pulseTimer = 0;
 
 // What the tab remembers: the thing being added, the switch count last used, the room taps are going into, the
 // "Placed ..." line, and the last tap (to ignore a double tap).
-const state = (app) => (app.ui.place ||= { choice: null, toggles: 1, roomId: "", result: "", last: null });
+const state = (app) => (app.ui.place ||= { choice: null, toggles: 1, roomId: "", lastRoomId: "", result: "", last: null });
 
 export function placeView(app) {
   const floor = app.floor(), st = state(app);
@@ -73,7 +73,8 @@ function showAdding(app) {
   const kept = m.find(app.project, "rooms", st.roomId);
   const room = kept && floor && kept.floorId === floor.id ? kept : null;
   app.setMode({
-    cancel: () => { st.choice = null; st.result = ""; },
+    // The room answered for this run ends with it; it is still the first one offered next time.
+    cancel: () => { Object.assign(st, { choice: null, result: "", lastRoomId: st.roomId || st.lastRoomId, roomId: "" }); },
     text: addingText(displayName(st.choice), room),
     result: st.result,
     buttons: [
@@ -118,7 +119,7 @@ function place(app, floor, room, x, y) {
 // "Which room is it in?": this floor's rooms, the last one used first, and New room (which has no outline).
 function askRoom(app, floor, onRoom) {
   openSheet("Which room is it in?", (close) => {
-    const rooms = roomChoices(app.project, floor.id, state(app).roomId);
+    const rooms = roomChoices(app.project, floor.id, state(app).roomId || state(app).lastRoomId);
     const fresh = roomFields(app);
     return [
       rooms.length > 0 && h("div", { class: "rows scroll" }, rooms.map((r) => button(r.name, () => { close(); onRoom(r); }))),

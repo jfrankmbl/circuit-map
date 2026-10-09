@@ -583,7 +583,10 @@ export function browseView(app) {
         ...m.sortedFloors(p).filter((f) => f.id !== floor.id && onFloor(f)).map((f) => button(`${f.name} (${onFloor(f)})`, () => app.setFloor(f.id)))]
       : []));
     const selected = m.find(p, "devices", st.selected);
-    body.replaceChildren(st.list ? listEl(app, devices) : planEl(devices, searching), ...(selected ? [detailsEl(app, selected)] : []));
+    const details = selected ? detailsEl(app, selected) : null;
+    body.replaceChildren(st.list ? listEl(app, devices) : planEl(devices, searching), ...(details ? [details] : []));
+    // On a phone the details sit under the plan; bring them into view once the screen has been drawn.
+    if (details) queueMicrotask(() => details.scrollIntoView({ block: "nearest" }));
   };
 
   const search = h("input", {
@@ -771,7 +774,6 @@ with:
 /* The Map tab */
 input[type="search"] { flex: 1; min-width: 9em; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
 .map-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.map-body .plan { min-height: 40vh; }
 .details { flex: none; max-height: 45vh; overflow: auto; padding: 12px 16px; border-top: 1px solid var(--line); }
 .details > * { margin: 0; }
 .details > * + * { margin-top: 8px; }
@@ -782,6 +784,8 @@ input[type="search"] { flex: 1; min-width: 9em; min-height: 44px; padding: 8px 1
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 16px; background: var(--panel); }
 .rows li.key-row { flex-direction: row; align-items: center; gap: 12px; }
 .key-mark { flex: none; width: 28px; text-align: center; font-size: 20px; color: var(--danger); }
+/* Four zoom buttons in a column cover too much of a phone-sized plan: two by two there. */
+@media (max-width: 699px) { .zoom-buttons { display: grid; grid-template-columns: auto auto; } }
 @media (min-width: 700px) {
   .map-body { flex-direction: row; }
   .details { width: 340px; max-height: none; border-top: 0; border-left: 1px solid var(--line); }

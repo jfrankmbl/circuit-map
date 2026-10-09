@@ -9,7 +9,7 @@ import { createPlan } from "./view/plan.js";
 import { welcomeView } from "./view/welcome.js";
 import { setupView } from "./view/setup.js";
 import { placeView } from "./view/place.js";
-import { browseView } from "./view/browse.js";
+import { browseView, deleteSelected } from "./view/browse.js";
 
 // [id, the word on the tab bar, view]. Tabs appear here as they are built.
 const TABS = [["floors", "Floors", setupView], ["add", "Add", placeView], ["map", "Map", browseView]];
@@ -166,6 +166,8 @@ document.addEventListener("keydown", (e) => {
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
   if (e.key === "Escape" && app.mode) {
     app.cancelMode();
+  } else if (e.key === "Delete" && !typing && !app.mode && app.project && app.tab === "map") {
+    deleteSelected(app);
   } else if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === "z" && !typing) {
     // In a field Cmd-Z should undo typing, so it is left alone there.
     e.preventDefault();
