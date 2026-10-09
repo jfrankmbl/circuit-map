@@ -891,3 +891,14 @@ Seeded one house (1 floor, 1 room, 2 outlets, 1 panel, 1 breaker) and walked the
 4. Breakers tab: the header block still fills the first screen (already listed as a candidate for the Web Awesome plan). Switches empty state: fine.
 
 Not yet walked: the Map tab with a picture, Print preview, toast, type picker, light mode. Round 60 should take those.
+
+## Round 60 - Pass B on plan-ui-look: Map with a picture, Print, toast, type picker, marker and send sheets, plates, PDF page choice, Home Screen card and note; phone width, dark and light
+Seeded a house (1 floor with a drawn picture, 3 rooms with outlines, 2 switches, outlets, a GFCI, a light, 1 panel, 2 breakers, 2 links, 2 plates to rewrite) with `openStore().saveProject()`. Switch type ids are S, S3, S4, DM, FC. plan-ui-look does not hold `pdfpage.js` or `homescreen.js` (they are on plan-4d-pdf-home), so those two were walked in a throwaway worktree with plan-4d merged onto plan-ui-look (the merge conflicted in styles.css, issue 17; resolved there by keeping both sides, worktree removed, no branch touched). The iPhone user agent was faked in that copy only. Checked contrast, 44 px targets, 16 px text and the console in each screen; no console errors.
+1. Map tab, plan and list, dark and light: issues 3, 4, 5, 11, 13; light borders issue 6.
+2. Marker sheet and type picker: issues 7, 8, 9.
+3. Send sheet and plates-to-rewrite list: issues 7, 9. No contrast, size or text failures.
+4. Toast: issue 10. Contrast and size fine.
+5. Print preview, Short and Full: issue 12. 10 pt print text is as specified.
+6. PDF page choice: issues 7, 14. A 4-page PDF returned the chosen page at 2318x3000.
+7. Home Screen card and note: issues 7, 15, 16.
+Not walked: the Switches tab again (issue 2), the password and unreadable-PDF error messages, a real iPhone for safe areas.
