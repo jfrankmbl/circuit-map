@@ -42,6 +42,7 @@ button, input { font: inherit; color: inherit; }
 button { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
 button.main { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
 button.plain { background: none; border: 0; text-decoration: underline; align-self: flex-start; }
+p button.plain { display: inline; min-width: 0; min-height: 0; padding: 6px 2px; }
 button.danger { color: var(--danger); }
 button.row { display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left; }
 button:disabled { opacity: 0.5; }
