@@ -1,7 +1,7 @@
 // The offline cache. Everything the app needs is saved when this version installs; after that a request is answered
 // from the cache. A new version installs beside the old one and waits: it takes over when every window of the app has
 // been closed, so the page never changes under him. VERSION and FILES are written by tools/stamp.mjs.
-const VERSION = 1;
+const VERSION = 2;
 const FILES = [
   "./",
   "icons/icon-180.png",
