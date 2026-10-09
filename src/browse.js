@@ -1,5 +1,6 @@
 // Looking things up: search, the list by room, and the words for one device's details. No DOM here.
-import { find, sortedFloors, breakerKey, controls, controlledBy, otherSwitches } from "./model.js";
+import { find, sortedFloors, controls, controlledBy, otherSwitches } from "./model.js";
+import { breakerTitle } from "./panel.js";
 import { displayName, typeInfo } from "./catalog.js";
 
 const byLabel = (a, b) => a.label.localeCompare(b.label, "en", { numeric: true });
@@ -37,7 +38,7 @@ export function listByRoom(project, devices) {
 export function circuitText(project, device) {
   const b = find(project, "breakers", device.breakerId);
   if (!b) return "Not known";
-  return `Breaker ${breakerKey(b)}${b.label ? ` (${b.label})` : ""}, ${device.tested ? "tested" : "guess"}`;
+  return `${breakerTitle(b)}, ${device.tested ? "tested" : "guess"}`;
 }
 
 // One entry per switch on the plate: { toggle, text, loads: [{ id, label }] }.
