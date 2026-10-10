@@ -11,6 +11,16 @@ Try it here: `node tools/serve.mjs`, then open http://localhost:8765 (Node 22 or
 
 Tests: `node --test`.
 
+## Requirements audit (run on the Mac)
+
+The prompt is `docs/requirements-loop.md` on the `desktop` branch; it writes `docs/requirements.md` and changes no code.
+
+1. If the repo is not on the Mac yet: `git clone https://github.com/jfrankmbl/circuit-map.git`, then `cd circuit-map`.
+2. `git fetch origin`
+3. `git checkout desktop`
+4. Open Claude Code in that folder and run `/loop follow docs/requirements-loop.md`.
+5. It commits and pushes `desktop` after each area and stops itself after area 12. On the PC, `git pull` on `desktop` to get the result.
+
 Web Awesome (details and callout only) is vendored in `vendor/webawesome/`. To update it: `npm pack @awesome.me/webawesome`, unpack the tarball, run `node tools/vendor-webawesome.mjs <that package folder>`, then `node tools/stamp.mjs`.
 
 Publishing: run `node tools/stamp.mjs --bump` (new version number and date, and the list of files the offline cache saves), run the tests, commit and push. GitHub Pages serves the repository root of `main` (Settings, Pages); a push goes live in about a minute. After adding a file, run `node tools/stamp.mjs` so it is cached; the tests fail until you do.
